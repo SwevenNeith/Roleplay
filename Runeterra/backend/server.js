@@ -9,7 +9,7 @@ app.use(cors());
 
 // Route d'exemple : Renvoie un message depuis le backend
 app.get('/api/message', (req, res) => {
-    res.json({ message: 'Hello from Node.js backend!' });
+    res.json({ message: 'Flopiflop' });
 });
 
 // Démarrer le serveur sur le port 3000
