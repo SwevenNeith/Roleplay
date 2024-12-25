@@ -1,19 +1,19 @@
-import { createRouter, createWebHistory } from 'vue-router';
+// ======= src/router/index.js =======
+import Vue from 'vue';
+import Router from 'vue-router';
+import Home from '../views/HomePage.vue';
+import About from '../views/AboutPage.vue';
+import UserList from '../views/UserList.vue';
 
-// Importez vos pages
-import HomePage from '../pages/HomePage.vue';
-import AboutPage from '../pages/AboutPage.vue';
-import ContactPage from '../pages/ContactPage.vue';
+Vue.use(Router);
 
 const routes = [
-    { path: '/', name: 'home', component: HomePage },
-    { path: '/about', name: 'about', component: AboutPage },
-    { path: '/contact', name: 'contact', component: ContactPage },
+  { path: '/', name: 'Home', component: Home },
+  { path: '/about', name: 'About', component: About },
+  { path: '/users', name: 'UserList', component: UserList },
 ];
 
-const router = createRouter({
-    history: createWebHistory(),
-    routes,
+export default new Router({
+  mode: 'history',
+  routes,
 });
-
-export default router;

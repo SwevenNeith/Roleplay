@@ -1,27 +1,26 @@
+// server.js
 const express = require('express');
+const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 const cors = require('cors');
+const userRoutes = require('./routes/userRoutes');
+
 const app = express();
-const port = 3000;
+const PORT = 3000;
 
-// Activer CORS pour permettre les requêtes depuis le frontend
+// Middleware
 app.use(cors());
+app.use(bodyParser.json());
 
-// API pour les pages du Header
-app.get('/api/pages', (req, res) => {
-    const pages = [
-    { id: 1, title: 'Accueil', path: '/' },
-    { id: 2, title: 'À Propos', path: '/about' },
-    { id: 3, title: 'Contact', path: '/contact' },
-    ];
-    res.json(pages);
-});
+// Connexion à MongoDB
+mongoose.connect('mongodb://localhost:27017/mon_projet', { useNewUrlParser: true, useUnifiedTopology: true })
+    .then(() => console.log('Connexion à MongoDB réussie !'))
+    .catch(err => console.error('Erreur de connexion à MongoDB :', err));
 
-// API pour des exemples de contenu (si besoin)
-app.get('/api/message', (req, res) => {
-    res.json({ message: 'Bonjour depuis le backend !' });
-});
+// Routes
+app.use('/api', userRoutes);
 
-// Lancer le serveur
-app.listen(port, () => {
-    console.log(`Backend running at http://localhost:${port}`);
+// Démarrer le serveur
+app.listen(PORT, () => {
+    console.log(`Serveur backend en cours d'exécution sur http://localhost:${PORT}`);
 });
