@@ -6,6 +6,7 @@
         <li><router-link to="/">Home</router-link></li>
         <li><router-link to="/about">About</router-link></li>
         <li><router-link to="/users">Users</router-link></li>
+        <li><router-link to="/classes">Classes</router-link></li> <!-- Nouveau lien -->
       </ul>
     </nav>
   </header>
