@@ -5,7 +5,7 @@
       <ul>
         <li v-for="voie in voies" :key="voie.slug">
           <!-- Chaque voie est un lien affichant son nom -->
-          <router-link :to="'/'">{{ voie.nom }}</router-link>
+          <router-link :to="`/voies/${voie.slug}`">{{ voie.nom }}</router-link>
         </li>
       </ul>
     </div>

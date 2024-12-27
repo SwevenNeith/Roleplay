@@ -6,6 +6,7 @@ const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
 const classRoutes = require('./routes/classRoutes'); // Import des routes
 const voieRoutes = require('./routes/voieRoutes');
+const competenceRoutes = require('./routes/competenceRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -23,6 +24,7 @@ mongoose.connect('mongodb://localhost:27017/Runeterra', { useNewUrlParser: true,
 app.use('/api', userRoutes);
 app.use('/api', classRoutes);
 app.use('/api', voieRoutes);
+app.use('/api', competenceRoutes);
 
 
 // Démarrer le serveur
