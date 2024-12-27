@@ -7,7 +7,7 @@
             <!-- Boucle sur chaque classe dans "classes" pour créer un élément de liste -->
             <li v-for="classe in classes" :key="classe.slug">
             <!-- Lien dynamique vers la page d'accueil pour chaque classe -->
-            <router-link :to="'/'">{{ classe.nom }}</router-link>
+            <router-link :to="`/classes/${classe.slug}`">{{ classe.nom }}</router-link>
             </li>
         </ul>
     </div>

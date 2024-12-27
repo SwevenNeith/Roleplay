@@ -5,6 +5,7 @@ import About from '../views/AboutPage.vue';
 import UserList from '../views/UserList.vue';
 import ClasseList from '../views/ClasseList.vue'; // Import de la vue
 import VoieList from "../views/VoieList.vue";
+import ClassDetails from "../views/ClassDetails.vue";
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -12,6 +13,7 @@ const routes = [
   { path: '/users', name: 'UserList', component: UserList },
   { path: '/classes', name: 'ClasseList', component: ClasseList }, // Nouvelle route
   { path: "/voies", name: "VoieList", component: VoieList },
+  { path: "/classes/:slug", name: "ClassDetails", component: ClassDetails },
 ];
 
 const router = createRouter({
