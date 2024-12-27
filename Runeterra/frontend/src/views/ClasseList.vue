@@ -1,69 +1,66 @@
 <template>
     <div>
-        <!-- Titre principal de la page -->
-        <h1>Liste des Classes</h1>
-        <!-- Liste non ordonnée pour afficher les classes -->
-        <ul>
-            <!-- Boucle sur chaque classe dans "classes" pour créer un élément de liste -->
-            <li v-for="classe in classes" :key="classe.slug">
-            <!-- Lien dynamique vers la page d'accueil pour chaque classe -->
-            <router-link :to="`/classes/${classe.slug}`">{{ classe.nom }}</router-link>
-            </li>
-        </ul>
+      <!-- Titre principal de la page -->
+      <h1>Liste des Classes</h1>
+      <!-- Affiche un lien pour chaque classe -->
+      <ul>
+        <li v-for="classe in classes" :key="classe.slug">
+          <!-- Lien dynamique vers les détails de la classe -->
+          <router-link :to="`/classes/${classe.slug}`">{{ classe.nom }}</router-link>
+        </li>
+      </ul>
     </div>
-</template>
-
-<script>
-  /* Importation de la bibliothèque Axios pour effectuer des requêtes HTTP */
-import axios from 'axios';
-
-export default {
-    name: 'ClasseList', // Nom du composant (bonne pratique pour identifier les composants)
-    
-    /* Déclaration des données locales du composant */
+  </template>
+  
+  <script>
+  export default {
+    name: "ClassList", // Nom du composant
     data() {
-        return {
-            classes: [], // Tableau pour stocker les données des classes récupérées depuis l'API
-        };
+      return {
+        classes: [], // Liste des classes récupérées du backend
+      };
     },
-    
-    /* Hook du cycle de vie - s'exécute lorsque le composant est monté */
     created() {
-      // Requête HTTP GET pour récupérer les classes depuis le backend
-        axios
-        .get('http://localhost:3000/api/classes') // URL de l'API backend
-        .then(response => {
-            // Enregistre les données reçues dans le tableau "classes"
-            this.classes = response.data;
+      // Appelle le backend pour récupérer la liste des classes
+      fetch("http://localhost:3000/api/classes")
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error("Erreur lors de la récupération des classes");
+          }
+          return response.json();
         })
-        .catch(error => {
-            // Gestion des erreurs si la requête échoue
-            console.error('Erreur lors de la récupération des classes:', error);
+        .then((data) => {
+          this.classes = data; // Stocke les classes dans l'état local
+        })
+        .catch((error) => {
+          console.error("Erreur:", error); // Log les erreurs éventuelles
         });
     },
-};
-</script>
-
-<style scoped>
-  /* Style pour la liste non ordonnée */
-ul {
-    list-style-type: none; /* Supprime les puces */
-    padding: 0; /* Enlève le padding par défaut */
-}
-
-  /* Style pour chaque élément de la liste */
-li {
-    margin: 10px 0; /* Ajoute un espace vertical entre les éléments */
-}
-
-  /* Style pour les liens */
-a {
-    text-decoration: none; /* Supprime le soulignement des liens */
-    color: #42b983; /* Couleur des liens */
-}
-
-  /* Style au survol des liens */
-a:hover {
-    text-decoration: underline; /* Ajoute un soulignement au survol */
-}
-</style>
+  };
+  </script>
+  
+  <style scoped>
+  /* Style pour la liste */
+  h1 {
+    color: #333;
+  }
+  
+  ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  li {
+    margin: 5px 0;
+  }
+  
+  a {
+    text-decoration: none;
+    color: #007bff;
+  }
+  
+  a:hover {
+    text-decoration: underline;
+  }
+  </style>
+  

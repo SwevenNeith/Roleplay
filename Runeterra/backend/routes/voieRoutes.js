@@ -1,18 +1,15 @@
-const express = require('express');
-const Voie = require('../models/Voie');
+const express = require("express"); // Importation d'Express
+const router = express.Router(); // Initialisation du routeur Express
+const Voie = require("../models/Voie"); // Importation du modèle de voie
 
-const router = express.Router();
-
-// Route pour récupérer toutes les voies
-router.get('/voies', async (req, res) => {
+// Route GET pour récupérer toutes les voies
+router.get("/voies", async (req, res) => {
   try {
-    // Récupère toutes les voies dans la collection `runeterra_voies`
-    const voies = await Voie.find(); 
-    res.json(voies); // Renvoie les données sous forme JSON
+    const voies = await Voie.find(); // Récupère toutes les voies depuis MongoDB
+    res.json(voies); // Renvoie les voies au format JSON
   } catch (err) {
-    // En cas d'erreur, retourne un message d'erreur avec un statut 500
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ error: "Erreur lors de la récupération des voies" }); // En cas d'erreur
   }
 });
 
-module.exports = router;
+module.exports = router; // Exporte le routeur

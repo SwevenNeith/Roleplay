@@ -24,6 +24,7 @@ app.use('/api', userRoutes);
 app.use('/api', classRoutes);
 app.use('/api', voieRoutes);
 
+
 // Démarrer le serveur
 app.listen(PORT, () => {
     console.log(`Serveur backend en cours d'exécution sur http://localhost:${PORT}`);

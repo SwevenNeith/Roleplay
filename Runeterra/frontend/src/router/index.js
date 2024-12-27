@@ -6,6 +6,7 @@ import UserList from '../views/UserList.vue';
 import ClasseList from '../views/ClasseList.vue'; // Import de la vue
 import VoieList from "../views/VoieList.vue";
 import ClassDetails from "../views/ClassDetails.vue";
+import ClassTemplate from '@/components/ClassTemplate.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
