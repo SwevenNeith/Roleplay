@@ -8,6 +8,7 @@
         <li><router-link to="/users">Users</router-link></li>
         <li><router-link to="/classes">Classes</router-link></li> <!-- Nouveau lien -->
         <router-link to="/voies">Voies</router-link>
+        <li><router-link to="/map">Map</router-link></li>
       </ul>
     </nav>
   </header>

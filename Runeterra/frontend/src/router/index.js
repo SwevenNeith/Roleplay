@@ -7,6 +7,8 @@ import ClasseList from '../views/ClasseList.vue'; // Import de la vue
 import VoieList from "../views/VoieList.vue";
 import ClassDetails from "../views/ClassDetails.vue";
 import VoieDetails from "../views/VoieDetails.vue";
+import Map from '../views/Map.vue';
+import OriginDetails from '../views/OriginDetails.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -16,6 +18,8 @@ const routes = [
   { path: "/voies", name: "VoieList", component: VoieList },
   { path: "/classes/:slug", name: "ClassDetails", component: ClassDetails },
   { path: "/voies/:slug", name: "VoieDetails", component: VoieDetails },
+  { path: '/map', name: 'Map', component: Map },
+  { path: '/origins/:slug', name: 'OriginDetails', component: OriginDetails },
 ];
 
 const router = createRouter({

@@ -7,6 +7,7 @@ const userRoutes = require('./routes/userRoutes');
 const classRoutes = require('./routes/classRoutes'); // Import des routes
 const voieRoutes = require('./routes/voieRoutes');
 const competenceRoutes = require('./routes/competenceRoutes');
+const originRoutes = require('./routes/originRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -25,6 +26,7 @@ app.use('/api', userRoutes);
 app.use('/api', classRoutes);
 app.use('/api', voieRoutes);
 app.use('/api', competenceRoutes);
+app.use('/api', originRoutes);
 
 
 // Démarrer le serveur
