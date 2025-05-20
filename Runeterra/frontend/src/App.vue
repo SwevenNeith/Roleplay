@@ -1,6 +1,7 @@
 <template>
   <div id="app">
-    <Header />
+    <!-- Use dynamic component for the header -->
+    <component :is="currentHeader" />
     <main class="content">
       <router-view /><!-- Affichage des vues en fonction des routes -->
     </main>
@@ -8,11 +9,31 @@
 </template>
 
 <script>
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
 import Header from './components/Header.vue';
+import RuneterraHeader from './components/RuneterraHeader.vue';
 
 export default {
   components: {
     Header,
+    RuneterraHeader,
+  },
+  setup() {
+    // Access the current route
+    const route = useRoute();
+
+    // Compute which header to use based on the route's path
+    const currentHeader = computed(() => {
+      // If the path contains "runeterra", use RuneterraHeader
+      if (route.path.includes('runeterra')) {
+        return 'RuneterraHeader';
+      }
+      // Otherwise, use the default Header
+      return 'Header';
+    });
+
+    return { currentHeader };
   },
 };
 </script>

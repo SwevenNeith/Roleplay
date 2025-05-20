@@ -9,17 +9,19 @@ import ClassDetails from "../views/ClassDetails.vue";
 import VoieDetails from "../views/VoieDetails.vue";
 import Map from '../views/Map.vue';
 import OriginDetails from '../views/OriginDetails.vue';
+import RuneterraHomePage from '../views/RuneterraHomePage.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
   { path: '/about', name: 'About', component: About },
   { path: '/users', name: 'UserList', component: UserList },
-  { path: '/classes', name: 'ClasseList', component: ClasseList }, // Nouvelle route
-  { path: "/voies", name: "VoieList", component: VoieList },
-  { path: "/classes/:slug", name: "ClassDetails", component: ClassDetails },
-  { path: "/voies/:slug", name: "VoieDetails", component: VoieDetails },
-  { path: '/map', name: 'Map', component: Map },
-  { path: '/origins/:slug', name: 'OriginDetails', component: OriginDetails },
+  { path: '/runeterra-classes', name: 'ClasseList', component: ClasseList }, // Nouvelle route
+  { path: "/runeterra-voies", name: "VoieList", component: VoieList },
+  { path: "/runeterra-classes/:slug", name: "ClassDetails", component: ClassDetails },
+  { path: "/runeterra-voies/:slug", name: "VoieDetails", component: VoieDetails },
+  { path: '/runeterra-map', name: 'Map', component: Map },
+  { path: '/runeterra-origins/:slug', name: 'OriginDetails', component: OriginDetails },
+  { path: '/runeterra', name: 'RuneterraHomePage', component: RuneterraHomePage },
 ];
 
 const router = createRouter({
