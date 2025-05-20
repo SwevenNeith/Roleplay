@@ -10,8 +10,8 @@
       <span>Compteur : {{ counter }}</span>
       <!-- Bouton pour incrémenter le compteur -->
       <button @click="incrementCounter">Incrémenter</button>
-      <!-- Bouton pour sauvegarder la valeur du compteur dans la base de données -->
-      <button @click="saveCounter">Sauvegarder</button>
+      <!-- Bouton pour sauvegarder la valeur du compteur dans la base de données (affiché seulement si counter > 0) -->
+      <button v-if="counter > 0" @click="saveCounter">Sauvegarder</button>
       <!-- Bouton pour réinitialiser le compteur -->
       <button @click="resetCounter">Réinitialiser</button>
     </div>
