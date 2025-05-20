@@ -1,6 +1,6 @@
 const express = require("express"); // Importation du framework Express
 const router = express.Router(); // Création d'une instance de routeur
-const Class = require("../models/RuneterraClass"); // Importation du modèle Class
+const Class = require("../models/Classes"); // Importation du modèle Class
 const Voie = require("../models/Voie"); // Importation du modèle Voie
 
 // Route GET pour récupérer toutes les classes

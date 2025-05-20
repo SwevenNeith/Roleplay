@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const userRoutes = require('./routes/userRoutes');
-const classRoutes = require('./routes/classRoutes'); // Import des routes
+const classesRoutes = require('./routes/classesRoutes'); // Import des routes
 const voieRoutes = require('./routes/voieRoutes');
 const competenceRoutes = require('./routes/competenceRoutes');
 const originRoutes = require('./routes/originRoutes');
@@ -23,7 +23,7 @@ mongoose.connect('mongodb://localhost:27017/Runeterra', { useNewUrlParser: true,
 
 // Routes
 app.use('/api', userRoutes);
-app.use('/api', classRoutes);
+app.use('/api', classesRoutes);
 app.use('/api', voieRoutes);
 app.use('/api', competenceRoutes);
 app.use('/api', originRoutes);
