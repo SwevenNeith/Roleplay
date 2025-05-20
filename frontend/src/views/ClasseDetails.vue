@@ -1,17 +1,17 @@
 <template>
   <div>
-    <!-- Affichage de ClassTemplate avec les données récupérées -->
-    <ClassTemplate :classe_slug="classe_slug" v-if="classe_slug" />
+    <!-- Affichage de ClasseTemplate avec les données récupérées -->
+    <ClasseTemplate :classe_slug="classe_slug" v-if="classe_slug" />
   </div>
 </template>
 
 <script>
-import ClassTemplate from "../components/ClassTemplate.vue"; // Import du composant ClassTemplate
+import ClasseTemplate from "../components/ClasseTemplate.vue"; // Import du composant ClasseTemplate
 
 export default {
-  name: "ClassDetails",
+  name: "ClasseDetails",
   components: {
-    ClassTemplate, // Déclaration du composant enfant
+    ClasseTemplate, // Déclaration du composant enfant
   },
   data() {
     return {
@@ -31,5 +31,5 @@ export default {
 </script>
 
 <style scoped>
-/* Styles spécifiques à ClassDetails */
+/* Styles spécifiques à ClasseDetails */
 </style>

@@ -1,17 +1,17 @@
 <template>
     <div>
-      <!-- Affichage des détails de l'origine via le composant OriginTemplate -->
-      <OriginTemplate :origin="origin" v-if="origin" />
+      <!-- Affichage des détails de l'origine via le composant OrigineTemplate -->
+      <OrigineTemplate :origin="origin" v-if="origin" />
     </div>
   </template>
   
   <script>
-  import OriginTemplate from "../components/OriginTemplate.vue";
+  import OrigineTemplate from "../components/OrigineTemplate.vue";
   
   export default {
-    name: "OriginDetails", // Nom du composant
+    name: "OrigineDetails", // Nom du composant
     components: {
-      OriginTemplate, // Importation du composant OriginTemplate
+      OrigineTemplate, // Importation du composant OrigineTemplate
     },
     data() {
       return {

@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Origin = require('../models/Origin'); // Modèle Origin
+const Origin = require('../models/Origine'); // Modèle Origin
 
 // Route pour récupérer toutes les origines
 router.get('/origins', async (req, res) => {

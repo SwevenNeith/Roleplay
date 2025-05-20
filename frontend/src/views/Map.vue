@@ -59,7 +59,7 @@
     },
     methods: {
       goToOrigin(originSlug) {
-        this.$router.push({ name: "OriginDetails", params: { slug: originSlug } });
+        this.$router.push({ name: "OrigineDetails", params: { slug: originSlug } });
       },
     },
   };

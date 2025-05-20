@@ -24,7 +24,7 @@
 
 <script>
 export default {
-  name: "ClassTemplate",
+  name: "ClasseTemplate",
   props: {
     classe_slug: {
       type: String,
@@ -88,5 +88,5 @@ export default {
 </script>
 
 <style scoped>
-/* Styles spécifiques à ClassTemplate */
+/* Styles spécifiques à ClasseTemplate */
 </style>

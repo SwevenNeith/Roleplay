@@ -15,7 +15,7 @@
   
   <script>
   export default {
-    name: "OriginTemplate", // Nom du composant
+    name: "OrigineTemplate", // Nom du composant
     props: {
       origin: { type: Object, required: true }, // L'origine (propriété obligatoire)
     },
