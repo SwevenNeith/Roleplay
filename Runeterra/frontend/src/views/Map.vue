@@ -1,10 +1,9 @@
 <template>
-    <div>
-      <h1>Carte du Monde de Runeterra</h1>
+    <div class="fullscreen-map">
       <div class="map-container">
         <!-- Image de la carte -->
         <img
-          src="../assets/Shivani Sheet.png"
+          src="../assets/Runeterra_Map.png"
           alt="Carte du Monde de Runeterra"
           class="map-image"
         />
@@ -67,21 +66,53 @@
   </script>
   
   <style scoped>
+  html, body, #app, .fullscreen-map {
+    height: 100%;
+    width: 100vw;
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  
+  .fullscreen-map {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background: #eee;
+    z-index: 1;
+  }
+  
   .map-container {
     position: relative;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
     text-align: center;
+    overflow: hidden;
   }
   
   .map-image {
-    max-width: 100%;
-    height: auto;
-    border: 1px solid #000;
+    position: absolute;
+    top: 40px;
+    left: 0;
+    width: 100vw;
+    height: calc(100vh - 40px);
+    object-fit: cover;
+    border: none;
+    margin: 0;
+    padding: 0;
+    z-index: 2;
   }
   
   .clickable-zone {
     position: absolute;
     cursor: pointer;
-    /* D'autres styles peuvent être ajoutés ici pour personnaliser les zones */
+    z-index: 3;
   }
   
   .zone-tooltip {

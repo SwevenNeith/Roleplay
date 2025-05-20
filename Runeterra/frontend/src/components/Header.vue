@@ -8,7 +8,7 @@
       <div class="dropdown">
         <router-link to="/" class="dropdown-link">Jeu</router-link>
         <!-- Menu déroulant qui s'affichera au survol -->
-        <div class="dopdown-menu">
+        <div class="dropdown-menu">
           <router-link to="/classes">Classes</router-link>
           <router-link to="/voies">Voies</router-link>
         </div>
