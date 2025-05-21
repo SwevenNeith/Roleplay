@@ -9,6 +9,7 @@ const voieRoutes = require('./routes/voieRoutes');
 const competenceRoutes = require('./routes/competenceRoutes');
 const origineRoutes = require('./routes/origineRoutes');
 const counterRoutes = require('./routes/counterRoutes');
+const characterRoutes = require('./routes/characterRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -29,6 +30,7 @@ app.use('/api', voieRoutes);
 app.use('/api', competenceRoutes);
 app.use('/api', origineRoutes);
 app.use('/api', counterRoutes);
+app.use('/api', characterRoutes);
 
 
 // Démarrer le serveur

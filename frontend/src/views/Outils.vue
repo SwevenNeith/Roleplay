@@ -282,6 +282,8 @@ export default {
     if (savedCharacters) {
       this.characters = JSON.parse(savedCharacters);
     }
+    // Récupération initiale des personnages depuis MongoDB
+    this.getAllCharacters();
   },
   methods: {
     incrementCounter() {
@@ -307,22 +309,6 @@ export default {
       this.showCharacterForm = false;
       this.characterSaveMessage = '';
     },
-    // Sauvegarde le personnage dans la liste
-    saveCharacter() {
-      if (this.editIndex !== null) {
-        this.characters.splice(this.editIndex, 1, JSON.parse(JSON.stringify(this.character)));
-        this.editIndex = null;
-      } else {
-        this.characters.push(JSON.parse(JSON.stringify(this.character)));
-      }
-      localStorage.setItem('outils-characters', JSON.stringify(this.characters));
-      this.characterSaveMessage = 'Les données sont sauvegardées';
-      setTimeout(() => {
-        this.characterSaveMessage = '';
-        this.resetCharacterForm();
-        this.showCharacterForm = false;
-      }, 1200);
-    },
     resetCharacterForm() {
       this.character = {
         nom: '',
@@ -336,7 +322,7 @@ export default {
           Constitution: 0,
           Intelligence: 0,
           Sagesse: 0,
-          Charisme: 0,
+          Charisme: 0
         },
         inspiration: 0,
         maitrises: Object.fromEntries(this.maitrisesList.map(m => [m, 0])),
@@ -351,11 +337,55 @@ export default {
         image: ''
       };
     },
-    removeCharacter(index) {
-      this.characters.splice(index, 1);
-      localStorage.setItem('outils-characters', JSON.stringify(this.characters));
+    // Sauvegarde le personnage dans la liste
+    async saveCharacter() {
+      try {
+        // Vérifie si on est en mode "édition" (editIndex != null)
+        if (this.editIndex !== null) {
+          // On récupère l'ID du personnage à modifier
+          const charId = this.characters[this.editIndex]._id;
+          // PUT pour mettre à jour
+          await axios.put(`http://localhost:3000/api/characters/${charId}`, this.character);
+          this.editIndex = null;
+        } else {
+          // POST pour créer un nouveau personnage
+          await axios.post('http://localhost:3000/api/characters', this.character);
+        }
+        // Mets à jour la liste ou recharge depuis la DB
+        await this.getAllCharacters();
+        
+        // Message visuel + reset du formulaire
+        this.characterSaveMessage = 'Les données sont sauvegardées';
+        setTimeout(() => {
+          this.characterSaveMessage = '';
+          this.resetCharacterForm();
+          this.showCharacterForm = false;
+        }, 1200);
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde du personnage:", error);
+      }
+    },
+    async getAllCharacters() {
+      try {
+        const response = await axios.get('http://localhost:3000/api/characters');
+        this.characters = response.data;
+      } catch (error) {
+        console.error("Erreur lors du getAllCharacters:", error);
+      }
+    },
+    async removeCharacter(index) {
+      try {
+        const charId = this.characters[index]._id;
+        // DELETE pour supprimer en base
+        await axios.delete(`http://localhost:3000/api/characters/${charId}`);
+        // Ensuite, recharger la liste
+        await this.getAllCharacters();
+      } catch (error) {
+        console.error("Erreur lors de la suppression du personnage:", error);
+      }
     },
     editCharacter(idx) {
+      // On mémorise l'indice pour savoir quel personnage éditer
       this.editIndex = idx;
       this.character = JSON.parse(JSON.stringify(this.characters[idx]));
       this.showCharacterForm = true;
