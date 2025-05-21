@@ -3,13 +3,12 @@ const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const userRoutes = require('./routes/userRoutes');
 const classeRoutes = require('./routes/classeRoutes'); // Import des routes
 const voieRoutes = require('./routes/voieRoutes');
 const competenceRoutes = require('./routes/competenceRoutes');
 const origineRoutes = require('./routes/origineRoutes');
-const counterRoutes = require('./routes/counterRoutes');
 const characterRoutes = require('./routes/characterRoutes');
+const combatRoutes = require('./routes/combatRoutes');
 
 const app = express();
 const PORT = 3000;
@@ -24,13 +23,12 @@ mongoose.connect('mongodb://localhost:27017/Runeterra', { useNewUrlParser: true,
     .catch(err => console.error('Erreur de connexion à MongoDB :', err));
 
 // Routes
-app.use('/api', userRoutes);
 app.use('/api', classeRoutes);
 app.use('/api', voieRoutes);
 app.use('/api', competenceRoutes);
 app.use('/api', origineRoutes);
-app.use('/api', counterRoutes);
 app.use('/api', characterRoutes);
+app.use('/api', combatRoutes);
 
 
 // Démarrer le serveur

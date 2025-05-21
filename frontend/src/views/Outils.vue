@@ -7,9 +7,6 @@
     <!-- Section compteur -->
     <div class="counter-section">
       <span>Compteur : {{ counter }}</span>
-      <button @click="incrementCounter">Incrémenter</button>
-      <button v-if="counter > 0" @click="saveCounter">Sauvegarder</button>
-      <button @click="resetCounter">Réinitialiser</button>
     </div>
     <!-- Message de sauvegarde du compteur -->
     <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
@@ -221,6 +218,112 @@
         </div>
       </div>
     </transition>
+
+    <!-- Divider entre Cards et le bouton de combat -->
+    <hr class="divider-between" />
+
+    <!-- Bouton "Commencer un combat" -->
+    <button 
+      v-if="!showCombatList && !showInitiativePhase && !showCombatPhase" 
+      @click="showCombatList = true" 
+      class="combat-btn"
+    >
+      Commencer un combat
+    </button>
+
+    <!-- Message de confirmation sous le bouton -->
+    <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
+
+    <!-- Liste déroulante des personnages si showCombatList = true -->
+    <div v-if="showCombatList" class="combat-section">
+      <h2>Participants Potentiels</h2>
+      <div class="combat-characters">
+        <div
+          v-for="(perso, idx) in characters"
+          :key="'combat'+idx"
+          :class="['combat-character-item', { selected: selectedCombatCharacters.includes(perso._id) }]"
+          @click="toggleCombatSelection(perso._id)"
+        >
+          <strong>{{ perso.nom }}</strong><br />
+          <span>Race: {{ perso.race }}</span> |
+          <span>Classe: {{ perso.classe }}</span> |
+          <span>Joueur: {{ perso.joueur }}</span>
+        </div>
+      </div>
+
+      <!-- Bouton Annuler -->
+      <button @click="cancelCombatList" class="cancel-combat-btn">
+        Annuler
+      </button>
+
+      <!-- Bouton Lancer l'initiative -->
+      <button 
+        v-if="selectedCombatCharacters.length > 0" 
+        @click="startInitiativePhase" 
+        class="initiative-btn"
+      >
+        Lancer l'initiative
+      </button>
+    </div>
+
+    <!-- Phase d'initiative -->
+    <div v-if="showInitiativePhase" class="initiative-section">
+      <h2>Phase d'Initiative</h2>
+      <div class="initiative-characters">
+        <div
+          v-for="(perso, idx) in selectedCombatParticipants"
+          :key="'initiative'+idx"
+          class="initiative-character-item"
+        >
+          <strong>{{ perso.nom }}</strong>
+          <input 
+            type="number" 
+            v-model.number="perso.initiative" 
+            placeholder="Initiative" 
+            class="initiative-input"
+            :max="30"
+          />
+          <!-- Limite la valeur d'initiative à 30 -->
+        </div>
+      </div>
+
+      <!-- Boutons Annuler / Démarrer le combat -->
+      <div class="initiative-actions">
+        <button @click="cancelInitiativePhase" class="cancel-combat-btn">
+          Annuler
+        </button>
+        <button @click="startCombatPhase" class="start-combat-btn">
+          Démarrer le combat
+        </button>
+      </div>
+    </div>
+
+    <!-- Phase de combat -->
+    <div v-if="showCombatPhase" class="combat-phase">
+      <h2>Phase de Combat</h2>
+      <div class="combat-participants">
+        <div
+          v-for="(perso, idx) in sortedCombatParticipants"
+          :key="'combatPhase'+idx"
+          :class="['combat-participant-item', { selected: idx === selectedParticipantIndex }]"
+        >
+          <strong>{{ perso.nom }}</strong> - Initiative : {{ perso.initiative }}
+          <!-- Bouton "Fin du round" visible uniquement pour le participant sélectionné -->
+          <button
+            v-if="idx === selectedParticipantIndex"
+            @click="endRound"
+            class="end-round-btn"
+          >
+            Fin du round
+          </button>
+        </div>
+      </div>
+
+      <!-- Bouton "Fin du combat" -->
+      <button @click="endCombat" class="cancel-combat-btn">
+        Fin du combat
+      </button>
+    </div>
   </div>
 </template>
 
@@ -231,7 +334,7 @@ export default {
   name: 'Outils',
   data() {
     return {
-      counter: 0,
+      counter: 1, // Le compteur commence maintenant à 1
       saveMessage: '',
       showCharacterForm: false,
       // Personnage en cours d'édition
@@ -270,40 +373,26 @@ export default {
         'Tromperie','Perception passive','Performance','Survie urbaine'
       ],
       editIndex: null,
-      selectedCharacter: null
+      selectedCharacter: null,
+      showCombatList: false,
+      selectedCombatCharacters: [],
+      selectedCombatParticipants: [],
+      showInitiativePhase: false,
+      showCombatPhase: false,
+      selectedParticipantIndex: 0 // Index du participant actuellement sélectionné
     };
   },
   mounted() {
-    const savedCounter = localStorage.getItem('outils-counter');
-    if (savedCounter !== null) {
-      this.counter = parseInt(savedCounter, 10);
-    }
-    const savedCharacters = localStorage.getItem('outils-characters');
-    if (savedCharacters) {
-      this.characters = JSON.parse(savedCharacters);
-    }
-    // Récupération initiale des personnages depuis MongoDB
+    // Conservez uniquement la récupération des personnages depuis MongoDB
     this.getAllCharacters();
   },
+  computed: {
+    // Trie les participants par ordre décroissant d'initiative
+    sortedCombatParticipants() {
+      return [...this.selectedCombatParticipants].sort((a, b) => b.initiative - a.initiative);
+    }
+  },
   methods: {
-    incrementCounter() {
-      this.counter++;
-      localStorage.setItem('outils-counter', this.counter);
-    },
-    resetCounter() {
-      this.counter = 0;
-      localStorage.setItem('outils-counter', this.counter);
-    },
-    async saveCounter() {
-      try {
-        await axios.post('http://localhost:3000/api/counter', { value: this.counter });
-        this.saveMessage = 'Compteur sauvegardé !';
-        setTimeout(() => { this.saveMessage = ''; }, 2000);
-      } catch (error) {
-        this.saveMessage = "Erreur lors de la sauvegarde";
-        setTimeout(() => { this.saveMessage = ''; }, 2000);
-      }
-    },
     cancelCharacter() {
       this.resetCharacterForm();
       this.showCharacterForm = false;
@@ -395,6 +484,91 @@ export default {
     },
     closeModal() {
       this.selectedCharacter = null;
+    },
+    toggleCombatSelection(charId) {
+      if (this.selectedCombatCharacters.includes(charId)) {
+        this.selectedCombatCharacters = this.selectedCombatCharacters.filter(id => id !== charId);
+      } else {
+        this.selectedCombatCharacters.push(charId);
+      }
+    },
+    cancelCombatList() {
+      this.showCombatList = false;
+      this.selectedCombatCharacters = [];
+    },
+    startInitiativePhase() {
+      this.showCombatList = false;
+      this.showInitiativePhase = true;
+      // Prépare les participants sélectionnés avec un champ "initiative"
+      this.selectedCombatParticipants = this.characters
+        .filter(perso => this.selectedCombatCharacters.includes(perso._id))
+        .map(perso => ({ ...perso, initiative: 0 }));
+    },
+    cancelInitiativePhase() {
+      this.showInitiativePhase = false;
+      this.showCombatList = true;
+    },
+    startCombatPhase() {
+      this.showInitiativePhase = false;
+      this.showCombatPhase = true;
+
+      // Limite les initiatives à 30
+      this.selectedCombatParticipants.forEach(perso => {
+        if (perso.initiative > 30) {
+          perso.initiative = 30;
+        }
+      });
+
+      // Sélectionne automatiquement le premier participant (plus haute initiative)
+      this.selectedParticipantIndex = 0;
+    },
+    endRound() {
+      // Passe au participant suivant
+      this.selectedParticipantIndex++;
+      if (this.selectedParticipantIndex >= this.sortedCombatParticipants.length) {
+        // Si on dépasse le dernier participant, revient au premier
+        this.selectedParticipantIndex = 0;
+        // Incrémente le compteur à chaque retour au premier participant
+        this.counter++;
+      }
+    },
+    async saveCombatData() {
+      try {
+        // Prépare les données à envoyer
+        const combatData = {
+          participants: this.sortedCombatParticipants.map(perso => ({
+            nom: perso.nom,
+            initiative: perso.initiative
+          })),
+          date: new Date().toISOString().split('T')[0], // Date au format YYYY-MM-DD
+          tours: this.counter // Nombre de tours
+        };
+
+        // Envoie les données au backend
+        await axios.post('http://localhost:3000/api/combats', combatData);
+
+        // Affiche un message de confirmation
+        this.saveMessage = 'Les données du combat sont envoyées';
+        setTimeout(() => { this.saveMessage = ''; }, 2000);
+      } catch (error) {
+        console.error("Erreur lors de l'envoi des données du combat :", error);
+        this.saveMessage = "Erreur lors de l'envoi des données";
+        setTimeout(() => { this.saveMessage = ''; }, 2000);
+      }
+    },
+    endCombat() {
+      // Envoie les données du combat avant de réinitialiser
+      this.saveCombatData();
+
+      // Réinitialise la phase de combat
+      this.showCombatPhase = false;
+      this.showCombatList = false;
+      this.selectedCombatCharacters = [];
+      this.selectedCombatParticipants = [];
+      this.selectedParticipantIndex = 0;
+
+      // Réinitialise le compteur à 1
+      this.counter = 1;
     }
   },
   created() {
@@ -653,5 +827,159 @@ export default {
   gap: 12px;
   flex-wrap: wrap;
   justify-content: center;
+}
+
+/* Bouton Commencer un combat */
+.combat-btn {
+  background: #2c6578;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: 20px;
+}
+.combat-btn:hover {
+  background: #c8aa6e;
+  color: #2c6578;
+}
+/* Section combat */
+.combat-section {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 700px;
+}
+/* Liste des personnages pour le combat */
+.combat-characters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.combat-character-item {
+  padding: 8px;
+  cursor: pointer;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+.combat-character-item.selected {
+  background-color: #c8aa6e;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Bouton Annuler dans la section combat */
+.cancel-combat-btn {
+  margin-top: 15px;
+  background: #ccc;
+  color: #333;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+.cancel-combat-btn:hover {
+  background: #999;
+}
+
+/* Boutons dans la phase d'initiative */
+.initiative-actions {
+  margin-top: 15px;
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start; /* Aligne les boutons à gauche */
+}
+
+/* Phase de combat */
+.combat-phase {
+  margin-top: 20px;
+  padding: 10px;
+  border: 1px solid #cccccc;
+  border-radius: 6px;
+  width: 100%;
+  max-width: 700px;
+}
+.combat-participants {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 10px;
+}
+.combat-participant-item {
+  padding: 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.combat-participant-item.selected {
+  background-color: #c8aa6e;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Bouton "Fin du round" */
+.end-round-btn {
+  background: #2c6578;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+.end-round-btn:hover {
+  background: #c8aa6e;
+  color: #2c6578;
+}
+
+/* Bouton "Fin du combat" */
+.cancel-combat-btn {
+  margin-top: 15px;
+  background: #2c6578;
+  color: #fff;
+  border: none;
+  padding: 10px 18px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+}
+.cancel-combat-btn:hover {
+  background: #c8aa6e;
+  color: #2c6578;
+}
+
+/* Style commun pour tous les boutons */
+button {
+  background: #2c6578;
+  color: #fff;
+  border: none;
+  padding: 10px 18px; /* Ajuste le padding pour un rendu uniforme */
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  margin-bottom: 10px;
+  transition: background 0.3s, color 0.3s;
+  display: inline-block; /* Permet aux boutons de s'adapter à leur contenu */
+  text-align: center; /* Centre le texte */
+}
+
+button:hover {
+  background: #c8aa6e;
+  color: #2c6578;
+}
+
+/* Boutons spécifiques (héritent du style commun) */
+.combat-btn,
+.cancel-combat-btn,
+.initiative-btn,
+.start-combat-btn,
+.add-character-btn {
+  /* Héritent du style commun */
 }
 </style>
