@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Competence = require('../models/Competences'); // Importation du modèle Competence
+const Competence = require('../models/Competence'); // Importation du modèle Competence
 
 // Route GET pour récupérer toutes les compétences
 router.get('/competences', async (req, res) => {
@@ -28,6 +28,18 @@ router.get('/competences/:slug', async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Erreur lors de la récupération des compétences' });
+  }
+});
+
+// Créer une nouvelle compétence
+router.post('/competences', async (req, res) => {
+  try {
+    const competence = new Competence(req.body);
+    await competence.save();
+    res.status(201).json({ message: 'Compétence créée avec succès', competence });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la création de la compétence" });
   }
 });
 

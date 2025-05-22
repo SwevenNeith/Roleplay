@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Voie = require('../models/Voie');
-const Competence = require('../models/Competences'); // Importation du modèle de compétence
+const Competence = require('../models/Competence'); // Importation du modèle de compétence
 
 // Route GET pour récupérer toutes les voies
 router.get('/voies', async (req, res) => {

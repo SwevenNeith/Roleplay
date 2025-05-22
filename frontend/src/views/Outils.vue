@@ -87,6 +87,49 @@
               <textarea v-model="character.background" rows="3" class="input"></textarea>
             </label>
           </div>
+
+          <!-- Bouton Ajouter une compétence -->
+          <button type="button" @click="showCompetenceForm = true" class="add-competence-btn">
+            Ajouter une compétence
+          </button>
+
+          <!-- Liste des compétences ajoutées -->
+          <div v-if="character.competences.length > 0" class="competences-list">
+            <h3>Compétences :</h3>
+            <ul>
+              <li v-for="(competence, idx) in character.competences" :key="idx">
+                {{ competence.nom }} ({{ competence.type }})
+                <button @click="removeCompetence(idx)" class="delete-competence-btn">Supprimer</button>
+              </li>
+            </ul>
+          </div>
+
+          <!-- Formulaire pour ajouter une compétence -->
+          <div v-if="showCompetenceForm" class="competence-form">
+            <h3>Ajouter une Compétence</h3>
+            <label>
+              Nom de la compétence :
+              <input type="text" v-model="newCompetence.nom" required />
+            </label>
+            <label>
+              Nom de la voie :
+              <input type="text" v-model="newCompetence.voie" required />
+            </label>
+            <div>
+              <label>
+                <input type="radio" value="Attaque" v-model="newCompetence.type" /> Attaque
+              </label>
+              <label>
+                <input type="radio" value="Soin" v-model="newCompetence.type" /> Soin
+              </label>
+              <label>
+                <input type="radio" value="Défense" v-model="newCompetence.type" /> Défense
+              </label>
+            </div>
+            <button @click="addCompetence" class="add-competence-btn">Ajouter</button>
+            <button @click="cancelCompetence" class="cancel-competence-btn">Annuler</button>
+          </div>
+
           <!-- Image (nouvel input) -->
           <div class="form-row">
             <label style="flex:1">
@@ -214,6 +257,18 @@
             <a :href="selectedCharacter.image" target="_blank" class="image-link">
               {{ selectedCharacter.image }}
             </a>
+          </div>
+
+          <!-- Liste des compétences -->
+          <div v-if="selectedCharacter.competences && selectedCharacter.competences.length > 0" class="card-competences">
+            <h3>Compétences :</h3>
+            <div class="competences-grid">
+              <div v-for="(competence, idx) in selectedCharacter.competences" :key="idx" class="competence-item">
+                <strong>{{ competence.nom }}</strong><br />
+                <span>Voie : {{ competence.voie }}</span><br />
+                <span>Type : {{ competence.type }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -362,7 +417,8 @@ export default {
         jetsEchoues: [false, false, false],
         inventaire: '',
         background: '',
-        image: '' // ← Lien affiché sous forme de texte cliquable
+        image: '', // ← Lien affiché sous forme de texte cliquable
+        competences: [] // Ajout du tableau de compétences
       },
       characterSaveMessage: '',
       characters: [],
@@ -379,7 +435,15 @@ export default {
       selectedCombatParticipants: [],
       showInitiativePhase: false,
       showCombatPhase: false,
-      selectedParticipantIndex: 0 // Index du participant actuellement sélectionné
+      selectedParticipantIndex: 0, // Index du participant actuellement sélectionné
+
+      // Nouveaux champs pour la compétence
+      newCompetence: {
+        nom: '',
+        voie: '',
+        type: ''
+      },
+      showCompetenceForm: false // Contrôle l'affichage du formulaire de compétence
     };
   },
   mounted() {
@@ -423,27 +487,32 @@ export default {
         jetsEchoues: [false, false, false],
         inventaire: '',
         background: '',
-        image: ''
+        image: '',
+        competences: [] // Réinitialise aussi le tableau de compétences
       };
     },
     // Sauvegarde le personnage dans la liste
     async saveCharacter() {
       try {
-        // Vérifie si on est en mode "édition" (editIndex != null)
         if (this.editIndex !== null) {
-          // On récupère l'ID du personnage à modifier
           const charId = this.characters[this.editIndex]._id;
-          // PUT pour mettre à jour
           await axios.put(`http://localhost:3000/api/characters/${charId}`, this.character);
           this.editIndex = null;
         } else {
-          // POST pour créer un nouveau personnage
-          await axios.post('http://localhost:3000/api/characters', this.character);
+          // Sauvegarde le personnage dans MongoDB
+          const response = await axios.post('http://localhost:3000/api/characters', this.character);
+
+          // Récupère l'ID du personnage créé
+          const characterId = response.data._id;
+
+          // Sauvegarde les compétences associées dans MongoDB
+          for (const competence of this.character.competences) {
+            competence.characterId = characterId; // Associe l'ID du personnage à la compétence
+            await axios.post('http://localhost:3000/api/competences', competence);
+          }
         }
-        // Mets à jour la liste ou recharge depuis la DB
+
         await this.getAllCharacters();
-        
-        // Message visuel + reset du formulaire
         this.characterSaveMessage = 'Les données sont sauvegardées';
         setTimeout(() => {
           this.characterSaveMessage = '';
@@ -451,7 +520,7 @@ export default {
           this.showCharacterForm = false;
         }, 1200);
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde du personnage:", error);
+        console.error("Erreur lors de la sauvegarde du personnage :", error);
       }
     },
     async getAllCharacters() {
@@ -569,6 +638,50 @@ export default {
 
       // Réinitialise le compteur à 1
       this.counter = 1;
+    },
+    // Fonction utilitaire pour créer un slug
+    slugify(str) {
+      return str
+        .toLowerCase()
+        .normalize('NFD') // Décompose les caractères accentués
+        .replace(/[\u0300-\u036f]/g, '') // Supprime les diacritiques (accents)
+        .replace(/\s+/g, '-') // Remplace les espaces par des tirets
+        .replace(/[^\w-]+/g, ''); // Supprime les caractères non alphanumériques
+    },
+
+    // Ajouter une compétence au personnage
+    async addCompetence() {
+      if (!this.newCompetence.nom || !this.newCompetence.voie || !this.newCompetence.type) {
+        alert("Veuillez remplir tous les champs pour la compétence.");
+        return;
+      }
+
+      const competence = {
+        nom: this.newCompetence.nom,
+        voie: this.newCompetence.voie,
+        type: this.newCompetence.type,
+        slug: this.slugify(this.newCompetence.nom),
+        voie_slug: this.slugify(this.newCompetence.voie)
+      };
+
+      // Ajoute la compétence à la liste locale du personnage
+      this.character.competences.push(competence);
+
+      // Réinitialise le formulaire de compétence
+      this.newCompetence = { nom: '', voie: '', type: '' };
+      this.showCompetenceForm = false; // Ferme uniquement le formulaire de compétence
+    },
+
+    // Annuler l'ajout d'une compétence
+    cancelCompetence() {
+      this.newCompetence = { nom: '', voie: '', type: '' };
+      this.showCompetenceForm = false;
+    },
+
+    // Supprimer une compétence du personnage
+    removeCompetence(index) {
+      // Supprime la compétence de la liste locale du personnage
+      this.character.competences.splice(index, 1);
     }
   },
   created() {
@@ -981,5 +1094,63 @@ button:hover {
 .start-combat-btn,
 .add-character-btn {
   /* Héritent du style commun */
+}
+
+.competence-form {
+  margin-top: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.add-competence-btn,
+.cancel-competence-btn {
+  margin-top: 10px;
+  background: #2c6578;
+  color: #fff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.add-competence-btn:hover,
+.cancel-competence-btn:hover {
+  background: #c8aa6e;
+  color: #2c6578;
+}
+
+.delete-competence-btn {
+  margin-left: 10px;
+  background: #c65757;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.delete-competence-btn:hover {
+  background: #8f4040;
+}
+
+/* Liste des compétences dans la modale */
+.card-competences {
+  margin-top: 15px;
+}
+
+.competences-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Deux colonnes */
+  gap: 10px; /* Espacement entre les compétences */
+}
+
+.competence-item {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  text-align: center;
 }
 </style>
