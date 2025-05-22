@@ -399,6 +399,29 @@
         Fin du combat
       </button>
     </div>
+
+    <!-- Modale pour sélectionner la cible -->
+    <transition name="fade">
+      <div v-if="showTargetModal" class="modal-overlay" @click.self="cancelTargetSelection">
+        <div class="modal-content">
+          <h3>Sélectionner la cible</h3>
+          <ul class="target-list">
+            <li
+              v-for="(participant, idx) in sortedCombatParticipants"
+              :key="'target'+idx"
+              :class="['target-item', { selected: selectedTarget === participant }]"
+              @click="selectedTarget = participant"
+            >
+              {{ participant.nom }}
+            </li>
+          </ul>
+          <div class="modal-actions">
+            <button @click="cancelTargetSelection" class="cancel-btn">Annuler</button>
+            <button @click="confirmTargetSelection" class="confirm-btn">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -466,7 +489,14 @@ export default {
       showCompetenceForm: false, // Contrôle l'affichage du formulaire de compétence
 
       // Pour la sélection des compétences
-      selectedCompetences: [] // Nouvelle propriété pour suivre les compétences sélectionnées
+      selectedCompetences: [], // Nouvelle propriété pour suivre les compétences sélectionnées
+
+      // Contrôle l'affichage de la modale
+      showTargetModal: false,
+      // Stocke la cible sélectionnée
+      selectedTarget: null,
+      // Permet de sauvegarder temporairement la compétence sélectionnée
+      selectedCompetenceBackup: null
     };
   },
   mounted() {
@@ -631,14 +661,14 @@ export default {
         return;
       }
 
-      if (this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom) {
-        // Si la compétence est déjà sélectionnée, on la désélectionne
-        this.selectedCompetences = [];
-      } else {
-        // Sinon, on sélectionne uniquement cette compétence
-        this.selectedCompetences = [competence];
-        competence.cooldownEnd = this.counter + 3; // Cooldown de 2 tours complets (réutilisable au tour actuel + 3)
-      }
+      // Réinitialise la cible sélectionnée
+      this.selectedTarget = null;
+
+      // Sauvegarde temporairement la compétence sélectionnée
+      this.selectedCompetenceBackup = competence;
+
+      // Ouvre la modale pour sélectionner une cible
+      this.showTargetModal = true;
     },
 
     // Passe au tour suivant et réduit le cooldown des compétences
@@ -651,6 +681,9 @@ export default {
         // Incrémente le compteur à chaque retour au premier participant
         this.counter++;
       }
+
+      // Réinitialise la cible sélectionnée
+      this.selectedTarget = null;
     },
     async saveCombatData() {
       try {
@@ -733,6 +766,33 @@ export default {
     removeCompetence(index) {
       // Supprime la compétence de la liste locale du personnage
       this.character.competences.splice(index, 1);
+    },
+    closeTargetModal() {
+      this.showTargetModal = false;
+      this.selectedTarget = null;
+    },
+    selectTarget(perso) {
+      this.selectedTarget = perso;
+    },
+    confirmTargetSelection() {
+      if (!this.selectedTarget) {
+        alert("Veuillez sélectionner une cible !");
+        return;
+      }
+
+      // Applique le cooldown à la compétence sélectionnée
+      this.selectedCompetenceBackup.cooldownEnd = this.counter + 3;
+
+      // Réinitialise la sauvegarde temporaire et ferme la modale
+      this.selectedCompetences = [this.selectedCompetenceBackup];
+      this.selectedCompetenceBackup = null;
+      this.showTargetModal = false;
+    },
+    cancelTargetSelection() {
+      // Réinitialise la compétence sélectionnée, la cible et ferme la modale
+      this.selectedCompetenceBackup = null;
+      this.selectedTarget = null; // Réinitialise la cible sélectionnée
+      this.showTargetModal = false;
     }
   },
   created() {
@@ -936,20 +996,22 @@ export default {
 .modal-overlay {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
   justify-content: center;
   z-index: 9999;
 }
+
 .modal-content {
   background: #fff;
   padding: 20px;
   border-radius: 8px;
-  position: relative;
-  max-height: 80vh;
-  overflow-y: auto;
+  width: 400px;
+  max-width: 90%;
+  text-align: center;
 }
+
 /* Bouton de fermeture dans la modale */
 .close-btn {
   position: absolute;
@@ -1007,7 +1069,9 @@ export default {
 .combat-btn:hover {
   background: #c8aa6e;
   color: #2c6578;
+  border: 1px solid #2c6578;
 }
+
 /* Section combat */
 .combat-section {
   margin-top: 20px;
@@ -1192,5 +1256,63 @@ button:hover {
   font-size: 0.85em;
   color: #999;
   font-style: italic;
+}
+
+/* Styles pour la modale de sélection de cible */
+.target-list {
+  list-style: none;
+  padding: 0;
+  margin: 20px 0;
+}
+
+.target-item {
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.target-item:hover {
+  background-color: #f0f0f0;
+}
+
+.target-item.selected {
+  background-color: #c8aa6e;
+  color: #fff;
+  font-weight: bold;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.cancel-btn, .confirm-btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.cancel-btn {
+  background: #ccc;
+  color: #333;
+}
+
+.cancel-btn:hover {
+  background: #999;
+}
+
+.confirm-btn {
+  background: #2c6578;
+  color: #fff;
+}
+
+.confirm-btn:hover {
+  background: #c8aa6e;
+  color: #2c6578;
 }
 </style>
