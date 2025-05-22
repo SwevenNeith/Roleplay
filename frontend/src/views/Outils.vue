@@ -362,7 +362,9 @@
           :key="'combatPhase'+idx"
           :class="['combat-participant-item', { selected: idx === selectedParticipantIndex }]"
         >
-          <strong>{{ perso.nom }}</strong> - Initiative : {{ perso.initiative }}
+          <!-- Nom, Initiative et PV -->
+          <strong>{{ perso.nom }}</strong> - Initiative : {{ perso.initiative }} - PV : {{ perso.pv }}
+
           <!-- Bouton "Fin du round" visible uniquement pour le participant sélectionné -->
           <button
             v-if="idx === selectedParticipantIndex"
@@ -372,6 +374,21 @@
             Fin du round
           </button>
         </div>
+      </div>
+
+      <!-- Compétences du personnage sélectionné -->
+      <div v-if="sortedCombatParticipants[selectedParticipantIndex]" class="combat-competences">
+        <h4>Compétences de {{ sortedCombatParticipants[selectedParticipantIndex].nom }} :</h4>
+        <ul>
+          <li
+            v-for="(competence, cIdx) in sortedCombatParticipants[selectedParticipantIndex].competences"
+            :key="'competence'+cIdx"
+            :class="['competence-item', { selected: isCompetenceSelected(competence) }]"
+            @click="selectCompetence(competence)"
+          >
+            {{ competence.nom }} ({{ competence.type }})
+          </li>
+        </ul>
       </div>
 
       <!-- Bouton "Fin du combat" -->
@@ -443,7 +460,10 @@ export default {
         voie: '',
         type: ''
       },
-      showCompetenceForm: false // Contrôle l'affichage du formulaire de compétence
+      showCompetenceForm: false, // Contrôle l'affichage du formulaire de compétence
+
+      // Pour la sélection des compétences
+      selectedCompetences: [] // Nouvelle propriété pour suivre les compétences sélectionnées
     };
   },
   mounted() {
@@ -682,6 +702,22 @@ export default {
     removeCompetence(index) {
       // Supprime la compétence de la liste locale du personnage
       this.character.competences.splice(index, 1);
+    },
+
+    // Vérifie si une compétence est sélectionnée
+    isCompetenceSelected(competence) {
+      return this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom;
+    },
+
+    // Sélectionne une compétence (une seule à la fois)
+    selectCompetence(competence) {
+      if (this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom) {
+        // Si la compétence est déjà sélectionnée, on la désélectionne
+        this.selectedCompetences = [];
+      } else {
+        // Sinon, on sélectionne uniquement cette compétence
+        this.selectedCompetences = [competence];
+      }
     }
   },
   created() {
@@ -1049,6 +1085,7 @@ export default {
 .end-round-btn:hover {
   background: #c8aa6e;
   color: #2c6578;
+  border: 1px solid #2c6578;
 }
 
 /* Bouton "Fin du combat" */
@@ -1104,53 +1141,36 @@ button:hover {
   background-color: #f9f9f9;
 }
 
-.add-competence-btn,
-.cancel-competence-btn {
-  margin-top: 10px;
-  background: #2c6578;
-  color: #fff;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 5px;
+.combat-competences h4 {
+  margin-bottom: 10px;
+  font-size: 1.2em;
+  font-weight: bold;
+}
+
+.combat-competences ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.combat-competences li {
+  font-size: 0.9em;
+  margin-bottom: 5px;
   cursor: pointer;
+  padding: 5px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  transition: background-color 0.3s, border-color 0.3s;
 }
 
-.add-competence-btn:hover,
-.cancel-competence-btn:hover {
-  background: #c8aa6e;
-  color: #2c6578;
+.combat-competences li:hover {
+  background-color: #f0f0f0;
 }
 
-.delete-competence-btn {
-  margin-left: 10px;
-  background: #c65757;
+.combat-competences li.selected {
+  background-color: #c8aa6e;
   color: #fff;
-  border: none;
-  padding: 5px 10px;
-  border-radius: 5px;
-  cursor: pointer;
-}
-
-.delete-competence-btn:hover {
-  background: #8f4040;
-}
-
-/* Liste des compétences dans la modale */
-.card-competences {
-  margin-top: 15px;
-}
-
-.competences-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Deux colonnes */
-  gap: 10px; /* Espacement entre les compétences */
-}
-
-.competence-item {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #f9f9f9;
-  text-align: center;
+  border-color: #2c6578;
+  font-weight: bold;
 }
 </style>
