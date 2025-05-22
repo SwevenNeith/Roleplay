@@ -383,10 +383,13 @@
           <li
             v-for="(competence, cIdx) in sortedCombatParticipants[selectedParticipantIndex].competences"
             :key="'competence'+cIdx"
-            :class="['competence-item', { selected: isCompetenceSelected(competence) }]"
+            :class="['competence-item', { selected: isCompetenceSelected(competence), cooldown: isCompetenceOnCooldown(competence) }]"
             @click="selectCompetence(competence)"
           >
-            {{ competence.nom }} ({{ competence.type }})
+            <span>{{ competence.nom }} ({{ competence.type }})</span>
+            <span v-if="isCompetenceOnCooldown(competence)" class="cooldown-text">
+              Utilisable dans {{ competence.cooldownEnd - counter }} tour(s)
+            </span>
           </li>
         </ul>
       </div>
@@ -611,6 +614,34 @@ export default {
       // Sélectionne automatiquement le premier participant (plus haute initiative)
       this.selectedParticipantIndex = 0;
     },
+    // Vérifie si une compétence est sélectionnée
+    isCompetenceSelected(competence) {
+      return this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom;
+    },
+
+    // Vérifie si une compétence est en cooldown
+    isCompetenceOnCooldown(competence) {
+      return competence.cooldownEnd && competence.cooldownEnd > this.counter;
+    },
+
+    // Sélectionne une compétence (une seule à la fois)
+    selectCompetence(competence) {
+      if (this.isCompetenceOnCooldown(competence)) {
+        alert(`Cette compétence est en cooldown ! Utilisable dans ${competence.cooldownEnd - this.counter} tour(s).`);
+        return;
+      }
+
+      if (this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom) {
+        // Si la compétence est déjà sélectionnée, on la désélectionne
+        this.selectedCompetences = [];
+      } else {
+        // Sinon, on sélectionne uniquement cette compétence
+        this.selectedCompetences = [competence];
+        competence.cooldownEnd = this.counter + 3; // Cooldown de 2 tours complets (réutilisable au tour actuel + 3)
+      }
+    },
+
+    // Passe au tour suivant et réduit le cooldown des compétences
     endRound() {
       // Passe au participant suivant
       this.selectedParticipantIndex++;
@@ -702,22 +733,6 @@ export default {
     removeCompetence(index) {
       // Supprime la compétence de la liste locale du personnage
       this.character.competences.splice(index, 1);
-    },
-
-    // Vérifie si une compétence est sélectionnée
-    isCompetenceSelected(competence) {
-      return this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom;
-    },
-
-    // Sélectionne une compétence (une seule à la fois)
-    selectCompetence(competence) {
-      if (this.selectedCompetences.length > 0 && this.selectedCompetences[0].nom === competence.nom) {
-        // Si la compétence est déjà sélectionnée, on la désélectionne
-        this.selectedCompetences = [];
-      } else {
-        // Sinon, on sélectionne uniquement cette compétence
-        this.selectedCompetences = [competence];
-      }
     }
   },
   created() {
@@ -1154,6 +1169,9 @@ button:hover {
 }
 
 .combat-competences li {
+  display: flex;
+  justify-content: space-between; /* Aligne le texte à gauche et le cooldown à droite */
+  align-items: center;
   font-size: 0.9em;
   margin-bottom: 5px;
   cursor: pointer;
@@ -1163,14 +1181,16 @@ button:hover {
   transition: background-color 0.3s, border-color 0.3s;
 }
 
-.combat-competences li:hover {
-  background-color: #f0f0f0;
+.combat-competences li.cooldown {
+  background-color: #ddd;
+  color: #999;
+  cursor: not-allowed;
+  border-color: #ccc;
 }
 
-.combat-competences li.selected {
-  background-color: #c8aa6e;
-  color: #fff;
-  border-color: #2c6578;
-  font-weight: bold;
+.cooldown-text {
+  font-size: 0.85em;
+  color: #999;
+  font-style: italic;
 }
 </style>
