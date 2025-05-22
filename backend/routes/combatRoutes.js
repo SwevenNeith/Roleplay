@@ -5,16 +5,21 @@ const Combat = require('../models/Combat'); // Modèle Combat
 // Route pour enregistrer un nouveau combat
 router.post('/combats', async (req, res) => {
   try {
-    const { participants, date, tours } = req.body;
+    const combatData = req.body;
 
-    // Création d'un nouveau document Combat
-    const combat = new Combat({ participants, date, tours });
+    // Valide les données avant de les sauvegarder
+    if (!combatData.date || !combatData.participants || !combatData.tours || !combatData.pvFinaux || !combatData.nombreTours) {
+      return res.status(400).json({ error: "Les données du combat sont incomplètes." });
+    }
+
+    // Crée un nouveau combat
+    const combat = new Combat(combatData);
     await combat.save();
 
-    res.status(201).json({ message: 'Combat enregistré avec succès', combat });
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Erreur lors de l'enregistrement du combat" });
+    res.status(201).json({ message: "Combat enregistré avec succès !" });
+  } catch (error) {
+    console.error("Erreur lors de l'enregistrement du combat :", error);
+    res.status(500).json({ error: "Erreur interne du serveur." });
   }
 });
 

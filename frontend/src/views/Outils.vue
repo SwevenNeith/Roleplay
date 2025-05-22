@@ -542,7 +542,10 @@ export default {
       competenceSuccess: null,
       // Valeur des dégâts
       damageValue: null,
-      editIndex: null // Index du personnage en cours d'édition
+      editIndex: null, // Index du personnage en cours d'édition
+
+      // Stocke les actions effectuées pendant le combat
+      combatLog: [],
     };
   },
   mounted() {
@@ -769,19 +772,48 @@ export default {
         setTimeout(() => { this.saveMessage = ''; }, 2000);
       }
     },
-    endCombat() {
-      // Envoie les données du combat avant de réinitialiser
-      this.saveCombatData();
+    async endCombat() {
+      try {
+        // Prépare les données du combat
+        const combatData = {
+          date: new Date().toISOString().split('T')[0],
+          participants: this.sortedCombatParticipants.map(perso => ({
+            nom: perso.nom,
+            initiative: perso.initiative,
+            pvDebut: [...perso.pv]
+          })),
+          tours: this.combatLog,
+          pvFinaux: this.sortedCombatParticipants.map(perso => ({
+            nom: perso.nom,
+            pvFin: [...perso.pv]
+          })),
+          nombreTours: this.counter
+        };
 
-      // Réinitialise la phase de combat
-      this.showCombatPhase = false;
-      this.showCombatList = false;
-      this.selectedCombatCharacters = [];
-      this.selectedCombatParticipants = [];
-      this.selectedParticipantIndex = 0;
+        // Envoie les données du combat au backend
+        await axios.post('http://localhost:3000/api/combats', combatData);
 
-      // Réinitialise le compteur à 1
-      this.counter = 1;
+        // Met à jour les PV actuels des personnages dans la base de données
+        for (const perso of this.sortedCombatParticipants) {
+          await axios.put(`http://localhost:3000/api/characters/${perso._id}`, {
+            pv: [...perso.pv]
+          });
+        }
+
+        // Réinitialise la phase de combat
+        this.showCombatPhase = false;
+        this.showCombatList = false;
+        this.selectedCombatCharacters = [];
+        this.selectedCombatParticipants = [];
+        this.selectedParticipantIndex = 0;
+        this.counter = 1;
+        this.combatLog = []; // Réinitialise le log du combat
+
+        alert("Combat terminé et sauvegardé avec succès !");
+      } catch (error) {
+        console.error("Erreur lors de la sauvegarde du combat :", error);
+        alert("Erreur lors de la sauvegarde du combat.");
+      }
     },
     // Fonction utilitaire pour créer un slug
     slugify(str) {
@@ -905,19 +937,47 @@ export default {
 
       const target = this.selectedTarget;
       const competence = this.selectedCompetenceBackup;
+      const acteur = this.sortedCombatParticipants[this.selectedParticipantIndex];
 
-      if (competence.type === "Attaque") {
-        // Applique l'effet d'attaque
-        const damage = Math.max(0, this.damageValue - target.defenseValue); // Réduit les dégâts par la défense
-        target.pv[0] = Math.max(0, target.pv[0] - damage); // Réduit les PV actuels
-        target.defenseValue = 0; // Réinitialise la défense après l'attaque
-      } else if (competence.type === "Soin") {
-        // Applique l'effet de soin
-        target.pv[0] = Math.min(target.pv[1], target.pv[0] + this.damageValue); // Augmente les PV actuels sans dépasser les PV max
-      } else if (competence.type === "Défense") {
-        // Applique l'effet de défense
-        target.defenseValue = this.damageValue; // Stocke la valeur de défense temporaire
+      // Détermine si la compétence a réussi ou échoué
+      const reussi = this.competenceSuccess === "Oui";
+
+      // Applique les effets uniquement si la compétence a réussi
+      if (reussi) {
+        if (competence.type === "Attaque") {
+          const damage = Math.max(0, this.damageValue - target.defenseValue);
+          target.pv[0] = Math.max(0, target.pv[0] - damage);
+          target.defenseValue = 0;
+        } else if (competence.type === "Soin") {
+          target.pv[0] = Math.min(target.pv[1], target.pv[0] + this.damageValue);
+        } else if (competence.type === "Défense") {
+          target.defenseValue = this.damageValue;
+        }
       }
+
+      // Enregistrer l'action dans le combat log
+      const action = {
+        acteur: acteur.nom,
+        competence: {
+          nom: competence.nom,
+          type: competence.type
+        },
+        cible: target.nom,
+        reussi: reussi, // Indique si la compétence a réussi
+        pvActuels: this.sortedCombatParticipants.reduce((acc, perso) => {
+          acc[perso.nom] = perso.pv[0];
+          return acc;
+        }, {})
+      };
+
+      // Ajoute l'action au tour actuel
+      const currentTour = this.counter;
+      let tour = this.combatLog.find(t => t.numero === currentTour);
+      if (!tour) {
+        tour = { numero: currentTour, actions: [] };
+        this.combatLog.push(tour);
+      }
+      tour.actions.push(action);
 
       // Met la compétence en cooldown
       competence.cooldownEnd = this.counter + 3;
