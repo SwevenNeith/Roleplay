@@ -457,7 +457,7 @@
           <input type="number" v-model.number="damageValue" min="0" placeholder="Dégâts" class="damage-input" />
           <div class="modal-actions">
             <button @click="cancelDamageInput" class="cancel-btn">Annuler</button>
-            <button @click="confirmDamageInput" class="confirm-btn">Confirmer</button>
+            <button @click="applyCompetenceEffect" class="confirm-btn">Appliquer</button>
           </div>
         </div>
       </div>
@@ -698,6 +698,7 @@ export default {
         if (perso.initiative > 30) {
           perso.initiative = 30;
         }
+        perso.defenseValue = 0; // Initialise la valeur de défense temporaire
       });
 
       // Sélectionne automatiquement le premier participant (plus haute initiative)
@@ -895,6 +896,35 @@ export default {
       this.showTargetModal = false;
       this.showSuccessModal = false;
       this.showDamageModal = false;
+    },
+    applyCompetenceEffect() {
+      if (!this.selectedTarget || !this.selectedCompetenceBackup) {
+        alert("Veuillez sélectionner une cible et une compétence !");
+        return;
+      }
+
+      const target = this.selectedTarget;
+      const competence = this.selectedCompetenceBackup;
+
+      if (competence.type === "Attaque") {
+        // Applique l'effet d'attaque
+        const damage = Math.max(0, this.damageValue - target.defenseValue); // Réduit les dégâts par la défense
+        target.pv[0] = Math.max(0, target.pv[0] - damage); // Réduit les PV actuels
+        target.defenseValue = 0; // Réinitialise la défense après l'attaque
+      } else if (competence.type === "Soin") {
+        // Applique l'effet de soin
+        target.pv[0] = Math.min(target.pv[1], target.pv[0] + this.damageValue); // Augmente les PV actuels sans dépasser les PV max
+      } else if (competence.type === "Défense") {
+        // Applique l'effet de défense
+        target.defenseValue = this.damageValue; // Stocke la valeur de défense temporaire
+      }
+
+      // Met la compétence en cooldown
+      competence.cooldownEnd = this.counter + 3;
+      this.selectedCompetences = [competence];
+
+      // Réinitialise les modales et les sélections
+      this.resetModals();
     }
   },
   created() {
