@@ -2,7 +2,9 @@
   <div>
     <h1>Runeterra</h1>
     <p>Page d'accueil de l'univers Runeterra.</p>
-    <router-link to="/runeterra-outils" class="outils-link">Outils</router-link>
+    <router-link to="/runeterra-outils" class="link">Outils</router-link>
+    <br>
+    <router-link to="/runeterra-journal" class="link">Journal</router-link>
   </div>
 </template>
 
@@ -22,7 +24,7 @@ export default {
   margin-top: 60px;
   padding: 20px;
 }
-.outils-link {
+.link {
   display: inline-block;
   margin-top: 20px;
   font-size: 1.1em;
@@ -30,7 +32,7 @@ export default {
   text-decoration: underline;
   cursor: pointer;
 }
-.outils-link:hover {
+.link:hover {
   color: #c8aa6e;
 }
 </style>
