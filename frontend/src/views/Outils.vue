@@ -776,18 +776,18 @@ export default {
       try {
         // Prépare les données du combat
         const combatData = {
-          date: new Date().toISOString().split('T')[0],
+          date: new Date().toISOString().split('T')[0], // Date du combat
           participants: this.sortedCombatParticipants.map(perso => ({
             nom: perso.nom,
             initiative: perso.initiative,
-            pvDebut: [...perso.pv]
+            pvDebut: [...perso.pv] // PV au début du combat
           })),
-          tours: this.combatLog,
+          tours: this.combatLog, // Log des tours et des actions
           pvFinaux: this.sortedCombatParticipants.map(perso => ({
             nom: perso.nom,
-            pvFin: [...perso.pv]
+            pvFin: [...perso.pv] // PV à la fin du combat
           })),
-          nombreTours: this.counter
+          nombreTours: this.counter // Nombre total de tours
         };
 
         // Envoie les données du combat au backend
@@ -935,53 +935,59 @@ export default {
         return;
       }
 
-      const target = this.selectedTarget;
-      const competence = this.selectedCompetenceBackup;
-      const acteur = this.sortedCombatParticipants[this.selectedParticipantIndex];
+      const target = this.selectedTarget; // Cible de l'action
+      const competence = this.selectedCompetenceBackup; // Compétence utilisée
+      const acteur = this.sortedCombatParticipants[this.selectedParticipantIndex]; // Acteur de l'action
 
       // Détermine si la compétence a réussi ou échoué
       const reussi = this.competenceSuccess === "Oui";
 
+      // Initialise les dégâts à 0 par défaut
+      let degats = 0;
+
       // Applique les effets uniquement si la compétence a réussi
       if (reussi) {
         if (competence.type === "Attaque") {
-          const damage = Math.max(0, this.damageValue - target.defenseValue);
-          target.pv[0] = Math.max(0, target.pv[0] - damage);
-          target.defenseValue = 0;
+          degats = Math.max(0, this.damageValue - target.defenseValue); // Calcule les dégâts en tenant compte de la défense
+          target.pv[0] = Math.max(0, target.pv[0] - degats); // Réduit les PV actuels de la cible
+          target.defenseValue = 0; // Réinitialise la défense après l'attaque
         } else if (competence.type === "Soin") {
-          target.pv[0] = Math.min(target.pv[1], target.pv[0] + this.damageValue);
+          degats = this.damageValue; // Les "dégâts" pour un soin sont positifs
+          target.pv[0] = Math.min(target.pv[1], target.pv[0] + degats); // Augmente les PV actuels sans dépasser les PV max
         } else if (competence.type === "Défense") {
-          target.defenseValue = this.damageValue;
+          degats = this.damageValue; // Les "dégâts" pour une défense représentent la valeur de défense
+          target.defenseValue = degats; // Applique la valeur de défense
         }
       }
 
       // Enregistrer l'action dans le combat log
       const action = {
-        acteur: acteur.nom,
+        acteur: acteur.nom, // Nom de l'acteur
         competence: {
-          nom: competence.nom,
-          type: competence.type
+          nom: competence.nom, // Nom de la compétence
+          type: competence.type // Type de la compétence (Attaque, Soin, Défense)
         },
-        cible: target.nom,
+        cible: target.nom, // Nom de la cible
         reussi: reussi, // Indique si la compétence a réussi
+        degats: degats, // Valeur des dégâts infligés (0 si échoué)
         pvActuels: this.sortedCombatParticipants.reduce((acc, perso) => {
-          acc[perso.nom] = perso.pv[0];
+          acc[perso.nom] = perso.pv[0]; // Enregistre les PV actuels de chaque participant
           return acc;
         }, {})
       };
 
       // Ajoute l'action au tour actuel
-      const currentTour = this.counter;
-      let tour = this.combatLog.find(t => t.numero === currentTour);
+      const currentTour = this.counter; // Numéro du tour actuel
+      let tour = this.combatLog.find(t => t.numero === currentTour); // Recherche le tour actuel dans le log
       if (!tour) {
-        tour = { numero: currentTour, actions: [] };
-        this.combatLog.push(tour);
+        tour = { numero: currentTour, actions: [] }; // Crée un nouveau tour s'il n'existe pas
+        this.combatLog.push(tour); // Ajoute le tour au log
       }
-      tour.actions.push(action);
+      tour.actions.push(action); // Ajoute l'action au tour
 
       // Met la compétence en cooldown
-      competence.cooldownEnd = this.counter + 3;
-      this.selectedCompetences = [competence];
+      competence.cooldownEnd = this.counter + 3; // Définit le cooldown de la compétence
+      this.selectedCompetences = [competence]; // Met à jour la compétence sélectionnée
 
       // Réinitialise les modales et les sélections
       this.resetModals();

@@ -22,6 +22,7 @@ const combatSchema = new mongoose.Schema({
           },
           cible: { type: String, required: true }, // Nom de la cible
           reussi: { type: Boolean, required: true }, // Indique si la compétence a réussi
+          degats: { type: Number, required: true }, // Valeur des dégâts infligés
           pvActuels: { type: Map, of: Number, required: true } // PV actuels de tous les participants après l'action
         }
       ]
