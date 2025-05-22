@@ -17,7 +17,16 @@ const characterSchema = new mongoose.Schema({
   inspiration: { type: Number, default: 0 },
   maitrises: { type: Object, default: {} },
   armure: { type: Number, default: 0 },
-  pv: { type: Number, default: 0 },
+  pv: {
+    type: [Number], // Tableau contenant [PV actuel, PV max]
+    default: [0, 0], // Valeurs par défaut
+    validate: {
+      validator: function (v) {
+        return v.length === 2 && v[0] <= v[1]; // Vérifie que PV actuel <= PV max
+      },
+      message: "Les PV actuels doivent être inférieurs ou égaux aux PV max."
+    }
+  },
   vitesse: { type: Number, default: 0 },
   deRecup: { type: String, default: '' },
   jetsReussis: { type: [Boolean], default: [false, false, false] },

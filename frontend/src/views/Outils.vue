@@ -43,7 +43,12 @@
           <div class="form-row top-stats-row">
             <label>Inspiration : <input type="number" v-model.number="character.inspiration" min="0" step="1" class="input-small" /></label>
             <label>Armure : <input type="number" v-model.number="character.armure" min="0" class="input-small" /></label>
-            <label>PV : <input type="number" v-model.number="character.pv" min="0" class="input-small" /></label>
+            <label>
+              PV :
+              <input type="number" v-model.number="character.pv[0]" min="0" class="input-small" placeholder="Actuels" />
+              /
+              <input type="number" v-model.number="character.pv[1]" min="0" class="input-small" placeholder="Max" required />
+            </label>
             <label>Vitesse : <input type="number" v-model.number="character.vitesse" min="0" class="input-small" /></label>
             <label>DR : <input type="text" v-model="character.deRecup" class="input-small" /></label>
           </div>
@@ -182,7 +187,7 @@
       </div>
     </div>
 
-    <!-- Modale détaillée -->
+        <!-- Modale détaillée -->
     <transition name="fade">
       <div v-if="selectedCharacter" class="modal-overlay" @click.self="closeModal">
         <div class="modal-content">
@@ -204,7 +209,7 @@
           <div class="card-top-stats-row">
             <span><strong>Inspiration :</strong> {{ selectedCharacter.inspiration ?? 0 }}</span>
             <span><strong>Armure :</strong> {{ selectedCharacter.armure ?? 0 }}</span>
-            <span><strong>PV :</strong> {{ selectedCharacter.pv ?? 0 }}</span>
+            <span><strong>PV :</strong> {{ selectedCharacter.pv[0] ?? 0 }} / {{ selectedCharacter.pv[1] ?? 0 }}</span>
             <span><strong>Vitesse :</strong> {{ selectedCharacter.vitesse ?? 0 }}</span>
             <span><strong>DR :</strong> {{ selectedCharacter.deRecup ?? '' }}</span>
           </div>
@@ -488,7 +493,7 @@ export default {
         inspiration: 0,
         maitrises: {},
         armure: 0,
-        pv: 0,
+        pv: [0, 0], // Initialisation correcte comme tableau
         vitesse: 0,
         deRecup: '',
         jetsReussis: [false, false, false],
@@ -506,7 +511,6 @@ export default {
         'Investigation','Médecine','Nature','Perception','Persuasion','Religion','Représentation','Survie',
         'Tromperie','Perception passive','Performance','Survie urbaine'
       ],
-      editIndex: null,
       selectedCharacter: null,
       showCombatList: false,
       selectedCombatCharacters: [],
@@ -537,7 +541,8 @@ export default {
       // Résultat de la compétence (Oui/Non)
       competenceSuccess: null,
       // Valeur des dégâts
-      damageValue: null
+      damageValue: null,
+      editIndex: null // Index du personnage en cours d'édition
     };
   },
   mounted() {
@@ -569,12 +574,12 @@ export default {
           Constitution: 0,
           Intelligence: 0,
           Sagesse: 0,
-          Charisme: 0
+          Charisme: 0,
         },
         inspiration: 0,
         maitrises: Object.fromEntries(this.maitrisesList.map(m => [m, 0])),
         armure: 0,
-        pv: 0,
+        pv: [0, 0], // Initialisation correcte comme tableau
         vitesse: 0,
         deRecup: '',
         jetsReussis: [false, false, false],
@@ -582,18 +587,24 @@ export default {
         inventaire: '',
         background: '',
         image: '',
-        competences: [] // Réinitialise aussi le tableau de compétences
+        competences: []
       };
     },
     // Sauvegarde le personnage dans la liste
     async saveCharacter() {
       try {
-        if (this.editIndex !== null) {
+        // Si les PV actuels ne sont pas définis, les définir à la valeur des PV max
+        if (!this.character.pv[0]) {
+          this.character.pv[0] = this.character.pv[1];
+        }
+
+        if (this.editIndex !== null && this.characters[this.editIndex]?._id) {
+          // Si un personnage est en cours d'édition, mettez-le à jour
           const charId = this.characters[this.editIndex]._id;
           await axios.put(`http://localhost:3000/api/characters/${charId}`, this.character);
           this.editIndex = null;
         } else {
-          // Sauvegarde le personnage dans MongoDB
+          // Sinon, créez un nouveau personnage
           const response = await axios.post('http://localhost:3000/api/characters', this.character);
 
           // Récupère l'ID du personnage créé
@@ -606,7 +617,10 @@ export default {
           }
         }
 
+        // Rechargez la liste des personnages
         await this.getAllCharacters();
+
+        // Affiche un message de confirmation
         this.characterSaveMessage = 'Les données sont sauvegardées';
         setTimeout(() => {
           this.characterSaveMessage = '';
@@ -637,10 +651,14 @@ export default {
       }
     },
     editCharacter(idx) {
-      // On mémorise l'indice pour savoir quel personnage éditer
-      this.editIndex = idx;
-      this.character = JSON.parse(JSON.stringify(this.characters[idx]));
-      this.showCharacterForm = true;
+      // Vérifiez que l'index est valide
+      if (idx >= 0 && idx < this.characters.length) {
+        this.editIndex = idx;
+        this.character = JSON.parse(JSON.stringify(this.characters[idx])); // Copie profonde pour éviter les modifications directes
+        this.showCharacterForm = true;
+      } else {
+        console.error("Index invalide pour l'édition du personnage :", idx);
+      }
     },
     openModal(perso) {
       this.selectedCharacter = perso;
