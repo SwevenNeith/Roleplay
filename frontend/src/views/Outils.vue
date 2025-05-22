@@ -368,7 +368,7 @@
           :class="['combat-participant-item', { selected: idx === selectedParticipantIndex }]"
         >
           <!-- Nom, Initiative et PV -->
-          <strong>{{ perso.nom }}</strong> - Initiative : {{ perso.initiative }} - PV : {{ perso.pv }}
+          <strong>{{ perso.nom }}</strong> - Initiative : {{ perso.initiative }} - PV : {{ perso.pv[0] ?? 0 }} / {{ perso.pv[1] ?? 0 }}
 
           <!-- Bouton "Fin du round" visible uniquement pour le participant sélectionné -->
           <button
