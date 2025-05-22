@@ -422,6 +422,41 @@
         </div>
       </div>
     </transition>
+
+    <!-- Modale pour vérifier si la compétence est réussie -->
+    <transition name="fade">
+      <div v-if="showSuccessModal" class="modal-overlay" @click.self="cancelSuccessCheck">
+        <div class="modal-content">
+          <h3>La compétence est-elle réussie ?</h3>
+          <div class="radio-group">
+            <label>
+              <input type="radio" value="Oui" v-model="competenceSuccess" /> Oui
+            </label>
+            <label>
+              <input type="radio" value="Non" v-model="competenceSuccess" /> Non
+            </label>
+          </div>
+          <div class="modal-actions">
+            <button @click="cancelSuccessCheck" class="cancel-btn">Annuler</button>
+            <button @click="confirmSuccessCheck" class="confirm-btn">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Modale pour entrer les dégâts -->
+    <transition name="fade">
+      <div v-if="showDamageModal" class="modal-overlay" @click.self="cancelDamageInput">
+        <div class="modal-content">
+          <h3>Entrez les dégâts</h3>
+          <input type="number" v-model.number="damageValue" min="0" placeholder="Dégâts" class="damage-input" />
+          <div class="modal-actions">
+            <button @click="cancelDamageInput" class="cancel-btn">Annuler</button>
+            <button @click="confirmDamageInput" class="confirm-btn">Confirmer</button>
+          </div>
+        </div>
+      </div>
+    </transition>
   </div>
 </template>
 
@@ -492,11 +527,17 @@ export default {
       selectedCompetences: [], // Nouvelle propriété pour suivre les compétences sélectionnées
 
       // Contrôle l'affichage de la modale
-      showTargetModal: false,
+      showTargetModal: false, // Modale pour sélectionner la cible
+      showSuccessModal: false, // Modale pour vérifier si la compétence est réussie
+      showDamageModal: false, // Modale pour entrer les dégâts
       // Stocke la cible sélectionnée
       selectedTarget: null,
       // Permet de sauvegarder temporairement la compétence sélectionnée
-      selectedCompetenceBackup: null
+      selectedCompetenceBackup: null,
+      // Résultat de la compétence (Oui/Non)
+      competenceSuccess: null,
+      // Valeur des dégâts
+      damageValue: null
     };
   },
   mounted() {
@@ -767,6 +808,12 @@ export default {
       // Supprime la compétence de la liste locale du personnage
       this.character.competences.splice(index, 1);
     },
+    cancelTargetSelection() {
+      // Réinitialise la cible sélectionnée et ferme la modale
+      this.selectedTarget = null;
+      this.selectedCompetenceBackup = null; // Annule la compétence sélectionnée
+      this.showTargetModal = false; // Ferme la modale
+    },
     closeTargetModal() {
       this.showTargetModal = false;
       this.selectedTarget = null;
@@ -780,19 +827,56 @@ export default {
         return;
       }
 
-      // Applique le cooldown à la compétence sélectionnée
-      this.selectedCompetenceBackup.cooldownEnd = this.counter + 3;
-
-      // Réinitialise la sauvegarde temporaire et ferme la modale
-      this.selectedCompetences = [this.selectedCompetenceBackup];
-      this.selectedCompetenceBackup = null;
+      // Ouvre la modale pour vérifier si la compétence est réussie
       this.showTargetModal = false;
+      this.showSuccessModal = true;
     },
-    cancelTargetSelection() {
-      // Réinitialise la compétence sélectionnée, la cible et ferme la modale
+    cancelSuccessCheck() {
+      this.competenceSuccess = null;
+      this.showSuccessModal = false;
+      this.showTargetModal = true;
+    },
+    confirmSuccessCheck() {
+      if (this.competenceSuccess === null) {
+        alert("Veuillez sélectionner Oui ou Non !");
+        return;
+      }
+
+      if (this.competenceSuccess === "Non") {
+        // Si la compétence échoue, elle est mise en cooldown
+        this.selectedCompetenceBackup.cooldownEnd = this.counter + 3;
+        this.selectedCompetences = [this.selectedCompetenceBackup];
+        this.resetModals();
+      } else {
+        // Si la compétence réussit, passe à la modale des dégâts
+        this.showSuccessModal = false;
+        this.showDamageModal = true;
+      }
+    },
+    cancelDamageInput() {
+      this.damageValue = null;
+      this.showDamageModal = false;
+      this.showSuccessModal = true;
+    },
+    confirmDamageInput() {
+      if (this.damageValue === null || this.damageValue < 0) {
+        alert("Veuillez entrer un nombre entier positif pour les dégâts !");
+        return;
+      }
+
+      // Met la compétence en cooldown
+      this.selectedCompetenceBackup.cooldownEnd = this.counter + 3;
+      this.selectedCompetences = [this.selectedCompetenceBackup];
+      this.resetModals();
+    },
+    resetModals() {
       this.selectedCompetenceBackup = null;
-      this.selectedTarget = null; // Réinitialise la cible sélectionnée
+      this.selectedTarget = null;
+      this.competenceSuccess = null;
+      this.damageValue = null;
       this.showTargetModal = false;
+      this.showSuccessModal = false;
+      this.showDamageModal = false;
     }
   },
   created() {
@@ -1314,5 +1398,29 @@ button:hover {
 .confirm-btn:hover {
   background: #c8aa6e;
   color: #2c6578;
+}
+
+.radio-group {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  margin: 20px 0;
+}
+
+.radio-group label {
+  font-size: 1em;
+  cursor: pointer;
+}
+
+.damage-input {
+  width: 80%; /* Réduit la largeur de l'input */
+  max-width: 200px; /* Limite la largeur maximale */
+  padding: 8px;
+  font-size: 1em;
+  margin: 20px auto; /* Centre l'input horizontalement */
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  text-align: center;
+  display: block; /* Permet de centrer avec margin auto */
 }
 </style>
