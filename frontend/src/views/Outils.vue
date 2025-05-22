@@ -785,20 +785,13 @@ export default {
           tours: this.combatLog, // Log des tours et des actions
           pvFinaux: this.sortedCombatParticipants.map(perso => ({
             nom: perso.nom,
-            pvFin: [...perso.pv] // PV à la fin du combat
+            pvFin: [perso.pv[0], perso.pv[1]] // Derniers PV actuels et PV max
           })),
           nombreTours: this.counter // Nombre total de tours
         };
 
         // Envoie les données du combat au backend
         await axios.post('http://localhost:3000/api/combats', combatData);
-
-        // Met à jour les PV actuels des personnages dans la base de données
-        for (const perso of this.sortedCombatParticipants) {
-          await axios.put(`http://localhost:3000/api/characters/${perso._id}`, {
-            pv: [...perso.pv]
-          });
-        }
 
         // Réinitialise la phase de combat
         this.showCombatPhase = false;

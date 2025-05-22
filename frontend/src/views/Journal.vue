@@ -9,7 +9,7 @@
         <button @click="showForm = true">Ajouter une session</button>
         <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
 
-        <!-- Formulaire d'ajout de session, affiché uniquement si showForm est vrai -->
+        <!-- Formulaire d'ajout de session -->
         <div v-if="showForm" class="form-container">
             <input 
                 type="text" 
@@ -26,6 +26,24 @@
             <button @click="saveSession" class="form-button save-button">Sauvegarder</button>
         </div>
 
+        <!-- Formulaire de modification global -->
+        <div v-if="editingSession" class="form-container">
+            <h2>Modifier la session</h2>
+            <input 
+                type="text" 
+                v-model="editingSession.title" 
+                placeholder="Titre" 
+                class="form-input"
+            />
+            <textarea 
+                v-model="editingSession.content" 
+                placeholder="Modifier le contenu" 
+                class="form-textarea"
+            ></textarea>
+            <button @click="cancelEdit" class="form-button cancel-button">Annuler</button>
+            <button @click="saveEdit" class="form-button save-button">Enregistrer</button>
+        </div>
+
         <!-- Liste des dates -->
         <ul class="combined-list">
             <li v-for="(items, date) in groupedData" :key="date">
@@ -40,6 +58,8 @@
                         <div v-if="item.type === 'Session'">
                             <h1 class="item-title"><strong>{{ item.title }}</strong></h1>
                             <p class="session-content">{{ item.content }}</p>
+                            <button @click="editSession(item)" class="form-button">Modifier</button>
+                            <button @click="deleteSession(item)" class="form-button cancel-button">Supprimer</button>
                             <hr class="divider" />
                         </div>
                         <!-- Affiche les informations des combats -->
@@ -58,7 +78,7 @@
                                     <ul>
                                         <li v-for="action in tour.actions" :key="action.acteur + action.cible">
                                             Acteur : {{ action.acteur }}, Compétence : {{ action.competence.nom }} ({{ action.competence.type }}), 
-                                            Cible : {{ action.cible }}, Réussi : {{ action.reussi ? 'Oui' : 'Non' }}
+                                            Cible : {{ action.cible }}, Réussi : {{ action.reussi ? 'Oui' : 'Non' }}, Dégats : {{ action.degats }}
                                             <!-- Affiche les PV actuels après l'action -->
                                             <p><strong>PV Actuels :</strong></p>
                                             <ul>
@@ -94,7 +114,8 @@ export default {
             sessionContent: '',
             saveMessage: '',
             combinedData: [],
-            visibleDates: [] // Liste des dates actuellement visibles
+            visibleDates: [], // Liste des dates actuellement visibles
+            editingSession: null // Session en cours de modification
         };
     },
     computed: {
@@ -130,7 +151,7 @@ export default {
                 });
 
                 if (response.ok) {
-                    this.saveMessage = 'Les données du combat sont envoyées';
+                    this.saveMessage = 'Session enregistrée avec succès';
                     this.cancelForm();
                     setTimeout(() => {
                         this.saveMessage = '';
@@ -148,7 +169,8 @@ export default {
             try {
                 const response = await fetch('http://localhost:3000/api/combined');
                 if (response.ok) {
-                    this.combinedData = await response.json();
+                    const data = await response.json();
+                    this.combinedData = data;
                 } else {
                     console.error('Erreur lors de la récupération des données combinées');
                 }
@@ -162,6 +184,63 @@ export default {
                 this.visibleDates = this.visibleDates.filter(d => d !== date);
             } else {
                 this.visibleDates.push(date);
+            }
+        },
+        editSession(session) {
+            if (session._id) {
+                this.editingSession = { ...session }; // Clone la session pour modification
+            } else {
+                console.error('Erreur : La session sélectionnée ne contient pas d\'ID');
+            }
+        },
+        cancelEdit() {
+            this.editingSession = null; // Annule la modification
+        },
+        async saveEdit() {
+            try {
+                const response = await fetch(`http://localhost:3000/api/sessions/${this.editingSession._id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(this.editingSession)
+                });
+
+                if (response.ok) {
+                    this.saveMessage = 'Session modifiée avec succès';
+                    this.editingSession = null;
+                    setTimeout(() => {
+                        this.saveMessage = '';
+                    }, 1200);
+                    this.fetchCombinedData();
+                } else {
+                    alert('Erreur lors de la modification de la session');
+                }
+            } catch (error) {
+                console.error('Erreur:', error);
+                alert('Erreur lors de la modification de la session');
+            }
+        },
+        async deleteSession(session) {
+            if (confirm('Êtes-vous sûr de vouloir supprimer cette session ?')) {
+                try {
+                    const response = await fetch(`http://localhost:3000/api/sessions/${session._id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        this.saveMessage = 'Session supprimée avec succès';
+                        setTimeout(() => {
+                            this.saveMessage = '';
+                        }, 1200);
+                        this.fetchCombinedData();
+                    } else {
+                        alert('Erreur lors de la suppression de la session');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur lors de la suppression de la session');
+                }
             }
         }
     },

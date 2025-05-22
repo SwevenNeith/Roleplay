@@ -6,21 +6,23 @@ const Combat = require('../models/Combat');
 // Route pour récupérer et trier les sessions et combats
 router.get('/combined', async (req, res) => {
     try {
-        // Récupère toutes les sessions avec toutes leurs données
-        const sessions = await Session.find({}, { _id: 0 }).lean();
+        // Récupère toutes les sessions avec toutes leurs données (inclut _id)
+        const sessions = await Session.find({}).lean();
         // Ajoute un type pour identifier les sessions
         const formattedSessions = sessions.map(session => ({
             type: 'Session',
+            _id: session._id, // Inclut l'ID
             title: session.title,
             content: session.content,
             date: session.createdAt
         }));
 
-        // Récupère tous les combats avec toutes leurs données
-        const combats = await Combat.find({}, { _id: 0 }).lean();
+        // Récupère tous les combats avec toutes leurs données (inclut _id)
+        const combats = await Combat.find({}).lean();
         // Ajoute un type pour identifier les combats
         const formattedCombats = combats.map(combat => ({
             type: 'Combat',
+            _id: combat._id, // Inclut l'ID
             date: combat.date,
             participants: combat.participants,
             tours: combat.tours,
