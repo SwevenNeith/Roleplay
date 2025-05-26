@@ -116,6 +116,7 @@
               Nom de la compétence :
               <input type="text" v-model="newCompetence.nom" required />
             </label>
+            <div v-if="competenceError" class="competence-error">{{ competenceError }}</div>
             <label>
               Nom de la voie :
               <input type="text" v-model="newCompetence.voie" required />
@@ -131,8 +132,8 @@
                 <input type="radio" value="Défense" v-model="newCompetence.type" /> Défense
               </label>
             </div>
-            <button @click="addCompetence" class="add-competence-btn">Ajouter</button>
-            <button @click="cancelCompetence" class="cancel-competence-btn">Annuler</button>
+            <button type="button" @click="addCompetence" class="add-competence-btn">Ajouter</button>
+            <button type="button" @click="cancelCompetence" class="cancel-competence-btn">Annuler</button>
           </div>
 
           <!-- Image (nouvel input) -->
@@ -546,6 +547,9 @@ export default {
 
       // Stocke les actions effectuées pendant le combat
       combatLog: [],
+      
+      // Message d'erreur pour les compétences
+      competenceError: '',
     };
   },
   mounted() {
@@ -825,26 +829,46 @@ export default {
         return;
       }
 
-      const competence = {
-        nom: this.newCompetence.nom,
-        voie: this.newCompetence.voie,
-        type: this.newCompetence.type,
-        slug: this.slugify(this.newCompetence.nom),
-        voie_slug: this.slugify(this.newCompetence.voie)
-      };
+      try {
+        // Vérifie si la compétence existe déjà dans MongoDB
+        const response = await axios.get('http://localhost:3000/api/competences');
+        const competenceExistante = response.data.find(
+          comp => comp.nom.toLowerCase() === this.newCompetence.nom.toLowerCase()
+        );
 
-      // Ajoute la compétence à la liste locale du personnage
-      this.character.competences.push(competence);
+        if (competenceExistante) {
+          this.competenceError = 'Cette compétence existe déjà !';
+          return;
+        }
 
-      // Réinitialise le formulaire de compétence
-      this.newCompetence = { nom: '', voie: '', type: '' };
-      this.showCompetenceForm = false; // Ferme uniquement le formulaire de compétence
+        // Réinitialise le message d'erreur
+        this.competenceError = '';
+
+        const competence = {
+          nom: this.newCompetence.nom,
+          voie: this.newCompetence.voie,
+          type: this.newCompetence.type,
+          slug: this.slugify(this.newCompetence.nom),
+          voie_slug: this.slugify(this.newCompetence.voie)
+        };
+
+        // Ajoute la compétence à la liste locale du personnage
+        this.character.competences.push(competence);
+
+        // Réinitialise le formulaire de compétence
+        this.newCompetence = { nom: '', voie: '', type: '' };
+        this.showCompetenceForm = false; // Ferme uniquement le formulaire de compétence
+      } catch (error) {
+        console.error("Erreur lors de la vérification de la compétence:", error);
+        this.competenceError = "Erreur lors de la vérification de la compétence";
+      }
     },
 
     // Annuler l'ajout d'une compétence
     cancelCompetence() {
       this.newCompetence = { nom: '', voie: '', type: '' };
       this.showCompetenceForm = false;
+      this.competenceError = ''; // Réinitialise le message d'erreur
     },
 
     // Supprimer une compétence du personnage
@@ -1529,5 +1553,13 @@ button:hover {
   border-radius: 5px;
   text-align: center;
   display: block; /* Permet de centrer avec margin auto */
+}
+
+/* Styles pour le message d'erreur des compétences */
+.competence-error {
+  color: #c65757;
+  font-size: 0.9em;
+  margin-top: 4px;
+  margin-bottom: 8px;
 }
 </style>
