@@ -6,43 +6,18 @@
         <p>Page d'accueil du journal.</p>
 
         <!-- Bouton pour afficher le formulaire d'ajout de session -->
-        <button @click="showForm = true">Ajouter une session</button>
+        <button @click="showForm = true" class="add-button" v-if="!showForm">
+            Ajouter une session
+        </button>
         <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
 
         <!-- Formulaire d'ajout de session -->
-        <div v-if="showForm" class="form-container">
-            <input 
-                type="text" 
-                v-model="sessionTitle" 
-                placeholder="Titre" 
-                class="form-input"
-            />
-            <textarea 
-                v-model="sessionContent" 
-                placeholder="Commencer à écrire la session" 
-                class="form-textarea"
-            ></textarea>
-            <button @click="cancelForm" class="form-button cancel-button">Annuler</button>
-            <button @click="saveSession" class="form-button save-button">Sauvegarder</button>
-        </div>
-
-        <!-- Formulaire de modification global -->
-        <div v-if="editingSession" class="form-container">
-            <h2>Modifier la session</h2>
-            <input 
-                type="text" 
-                v-model="editingSession.title" 
-                placeholder="Titre" 
-                class="form-input"
-            />
-            <textarea 
-                v-model="editingSession.content" 
-                placeholder="Modifier le contenu" 
-                class="form-textarea"
-            ></textarea>
-            <button @click="cancelEdit" class="form-button cancel-button">Annuler</button>
-            <button @click="saveEdit" class="form-button save-button">Enregistrer</button>
-        </div>
+        <SessionForm
+            v-if="showForm"
+            :initial-data="{ title: '', content: '', _id: null }"
+            @submit="handleSubmit"
+            @cancel="handleCancel"
+        />
 
         <!-- Liste des dates -->
         <ul class="combined-list">
@@ -56,11 +31,23 @@
                     <!-- Affiche les informations des sessions -->
                     <li v-for="(item, index) in items" :key="index">
                         <div v-if="item.type === 'Session'">
-                            <h1 class="item-title"><strong>{{ item.title }}</strong></h1>
-                            <p class="session-content">{{ item.content }}</p>
-                            <button @click="editSession(item)" class="form-button">Modifier</button>
-                            <button @click="deleteSession(item)" class="form-button cancel-button">Supprimer</button>
-                            <hr class="divider" />
+                            <!-- Mode édition -->
+                            <SessionForm
+                                v-if="editingSession && editingSession._id === item._id"
+                                :initial-data="item"
+                                @submit="handleSubmit"
+                                @cancel="handleCancel"
+                            />
+                            <!-- Mode affichage -->
+                            <div v-else>
+                                <h1 class="item-title"><strong>{{ item.title }}</strong></h1>
+                                <p class="session-content">{{ item.content }}</p>
+                                <div class="button-group">
+                                    <button @click="editSession(item)" class="form-button edit-button">Modifier</button>
+                                    <button @click="deleteSession(item)" class="form-button cancel-button">Supprimer</button>
+                                </div>
+                                <hr class="divider" />
+                            </div>
                         </div>
                         <!-- Affiche les informations des combats -->
                         <div v-if="item.type === 'Combat'">
@@ -106,16 +93,19 @@
 </template>
 
 <script>
+import SessionForm from '@/components/SessionForm.vue';
+
 export default {
+    components: {
+        SessionForm
+    },
     data() {
         return {
             showForm: false,
-            sessionTitle: '',
-            sessionContent: '',
             saveMessage: '',
             combinedData: [],
-            visibleDates: [], // Liste des dates actuellement visibles
-            editingSession: null // Session en cours de modification
+            visibleDates: [],
+            editingSession: null
         };
     },
     computed: {
@@ -131,35 +121,50 @@ export default {
         }
     },
     methods: {
-        cancelForm() {
+        handleCancel() {
             this.showForm = false;
-            this.sessionTitle = '';
-            this.sessionContent = '';
+            this.editingSession = null;
         },
-        async saveSession() {
+        async handleSubmit(formData) {
             try {
-                const response = await fetch('http://localhost:3000/api/sessions', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        title: this.sessionTitle,
-                        content: this.sessionContent,
-                        createdAt: new Date().toISOString().split('T')[0]
-                    })
-                });
+                if (formData._id) {
+                    // Mode édition
+                    const response = await fetch(`http://localhost:3000/api/sessions/${formData._id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(formData)
+                    });
 
-                if (response.ok) {
-                    this.saveMessage = 'Session enregistrée avec succès';
-                    this.cancelForm();
-                    setTimeout(() => {
-                        this.saveMessage = '';
-                    }, 1200);
-                    this.fetchCombinedData();
+                    if (response.ok) {
+                        this.saveMessage = 'Session modifiée avec succès';
+                        this.editingSession = null;
+                    }
                 } else {
-                    alert('Erreur lors de l\'enregistrement de la session');
+                    // Mode création
+                    const response = await fetch('http://localhost:3000/api/sessions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ...formData,
+                            createdAt: new Date().toISOString().split('T')[0]
+                        })
+                    });
+
+                    if (response.ok) {
+                        this.saveMessage = 'Session enregistrée avec succès';
+                        this.showForm = false;
+                    }
                 }
+
+                setTimeout(() => {
+                    this.saveMessage = '';
+                }, 1200);
+                
+                await this.fetchCombinedData();
             } catch (error) {
                 console.error('Erreur:', error);
                 alert('Erreur lors de l\'enregistrement de la session');
@@ -179,7 +184,6 @@ export default {
             }
         },
         toggleDetails(date) {
-            // Ajoute ou supprime la date de la liste des dates visibles
             if (this.visibleDates.includes(date)) {
                 this.visibleDates = this.visibleDates.filter(d => d !== date);
             } else {
@@ -187,39 +191,7 @@ export default {
             }
         },
         editSession(session) {
-            if (session._id) {
-                this.editingSession = { ...session }; // Clone la session pour modification
-            } else {
-                console.error('Erreur : La session sélectionnée ne contient pas d\'ID');
-            }
-        },
-        cancelEdit() {
-            this.editingSession = null; // Annule la modification
-        },
-        async saveEdit() {
-            try {
-                const response = await fetch(`http://localhost:3000/api/sessions/${this.editingSession._id}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(this.editingSession)
-                });
-
-                if (response.ok) {
-                    this.saveMessage = 'Session modifiée avec succès';
-                    this.editingSession = null;
-                    setTimeout(() => {
-                        this.saveMessage = '';
-                    }, 1200);
-                    this.fetchCombinedData();
-                } else {
-                    alert('Erreur lors de la modification de la session');
-                }
-            } catch (error) {
-                console.error('Erreur:', error);
-                alert('Erreur lors de la modification de la session');
-            }
+            this.editingSession = session;
         },
         async deleteSession(session) {
             if (confirm('Êtes-vous sûr de vouloir supprimer cette session ?')) {
@@ -233,7 +205,7 @@ export default {
                         setTimeout(() => {
                             this.saveMessage = '';
                         }, 1200);
-                        this.fetchCombinedData();
+                        await this.fetchCombinedData();
                     } else {
                         alert('Erreur lors de la suppression de la session');
                     }
@@ -254,6 +226,7 @@ export default {
 /* Centrage des titres */
 .item-title {
     text-align: center;
+    margin-bottom: 20px;
 }
 
 /* Justification du texte */
@@ -265,55 +238,37 @@ p, ul, li {
 .session-content {
     font-size: 18px;
     line-height: 1.6;
+    margin: 20px 0;
 }
 
-.divider { margin: 40px 0 20px 0; border: none; border-top: 2px solid #c8aa6e; }
-
-/* Conteneur du formulaire, centré horizontalement */
-.form-container {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-top: 20px;
+.divider { 
+    margin: 40px 0 20px 0; 
+    border: none; 
+    border-top: 2px solid #c8aa6e; 
 }
 
-/* Style pour les champs de texte */
-.form-input, .form-textarea {
-    width: 80%; /* Largeur identique pour les deux champs */
-    margin-bottom: 10px;
-    padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-/* Style pour la zone de texte */
-.form-textarea {
-    height: 150px; /* Hauteur de la zone de texte */
-    resize: none; /* Désactiver le redimensionnement */
-}
-
-/* Style pour les boutons */
-.form-button {
-    margin: 5px;
-    padding: 10px 20px;
-    font-size: 16px;
+/* Bouton d'ajout */
+.add-button {
+    background-color: #4CAF50;
+    color: white;
     border: none;
+    padding: 10px 20px;
     border-radius: 4px;
     cursor: pointer;
+    font-size: 16px;
+    margin: 20px 0;
+    transition: background-color 0.3s;
 }
 
-/* Bouton Annuler */
-.cancel-button {
-    background-color: #f44336; /* Rouge */
-    color: white;
+.add-button:hover {
+    background-color: #388e3c;
 }
 
-/* Bouton Sauvegarder */
-.save-button {
-    background-color: #4CAF50; /* Vert */
-    color: white;
+/* Message de sauvegarde */
+.save-message {
+    color: #4CAF50;
+    margin: 10px 0;
+    font-weight: bold;
 }
 
 /* Liste combinée */
@@ -323,23 +278,66 @@ p, ul, li {
     list-style-type: none;
 }
 
-.combined-list .date-header {
+.date-header {
     font-weight: bold;
     cursor: pointer;
-    margin-bottom: 10px;
+    margin: 20px 0;
+    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 4px;
     font-size: 18px;
     color: #2c6578;
+    transition: background-color 0.3s;
+}
+
+.date-header:hover {
+    background-color: #e0e0e0;
 }
 
 .details-list {
     margin-left: 20px;
     list-style-type: none;
-    padding: 0;
+    padding: 20px;
 }
 
 .details-list li {
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     font-size: 16px;
     color: #333;
+}
+
+/* Groupe de boutons */
+.button-group {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+}
+
+/* Boutons */
+.form-button {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.edit-button {
+    background-color: #2196F3;
+    color: white;
+}
+
+.edit-button:hover {
+    background-color: #1976D2;
+}
+
+.cancel-button {
+    background-color: #f44336;
+    color: white;
+}
+
+.cancel-button:hover {
+    background-color: #d32f2f;
 }
 </style>
