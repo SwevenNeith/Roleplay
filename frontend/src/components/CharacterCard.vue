@@ -1,7 +1,9 @@
+<!-- Composant pour afficher et éditer un personnage sous forme de carte -->
 <template>
   <div class="character-card big">
-    <!-- Mode affichage -->
+    <!-- Mode affichage simple -->
     <div v-if="!isEditing">
+      <!-- En-tête avec les informations de base -->
       <div class="card-header">
         <div class="card-header-name">{{ character.nom }}</div>
         <div class="card-header-details">
@@ -11,6 +13,7 @@
         </div>
       </div>
 
+      <!-- Boutons d'action -->
       <div class="card-buttons">
         <button class="edit-character-btn" @click="startEdit">Modifier</button>
         <button class="delete-character-btn" @click="$emit('delete')">Supprimer</button>
@@ -18,10 +21,10 @@
       </div>
     </div>
 
-    <!-- Mode édition -->
+    <!-- Mode édition détaillée -->
     <div v-else>
       <div class="edit-form">
-        <!-- En-tête -->
+        <!-- En-tête du formulaire -->
         <div class="header-section">
           <div class="form-group">
             <label>Nom du personnage :</label>
@@ -49,7 +52,7 @@
 
         <!-- Corps principal en 3 colonnes -->
         <div class="main-section">
-          <!-- Colonne de gauche : Caractéristiques -->
+          <!-- Colonne gauche : Caractéristiques -->
           <div class="left-column">
             <h4>Caractéristiques</h4>
             <div class="characteristics-list">
@@ -60,7 +63,7 @@
             </div>
           </div>
 
-          <!-- Colonne du milieu : Maîtrises -->
+          <!-- Colonne centrale : Maîtrises -->
           <div class="middle-column">
             <h4>Maîtrises</h4>
             <div class="skills-list">
@@ -71,7 +74,7 @@
             </div>
           </div>
 
-          <!-- Colonne de droite : Stats et autres -->
+          <!-- Colonne droite : Stats de combat -->
           <div class="right-column">
             <div class="combat-stats">
               <div class="stat-box">
@@ -112,7 +115,7 @@
           <textarea v-model="editedCharacter.background" rows="3"></textarea>
         </div>
 
-        <!-- Section compétences -->
+        <!-- Section des compétences -->
         <div class="competences-section">
           <CompetenceForm
             :competences="editedCharacter.competences"
@@ -121,7 +124,7 @@
           />
         </div>
 
-        <!-- Boutons -->
+        <!-- Boutons de sauvegarde/annulation -->
         <div class="button-group">
           <button class="btn-save" @click="saveEdit">Enregistrer</button>
           <button class="btn-cancel" @click="cancelEdit">Annuler</button>
@@ -132,6 +135,7 @@
 </template>
 
 <script>
+// Import du composant de gestion des compétences
 import CompetenceForm from './CompetenceForm.vue';
 
 export default {
@@ -139,17 +143,19 @@ export default {
   components: {
     CompetenceForm
   },
+  // Props reçues du composant parent
   props: {
     character: {
       type: Object,
       required: true
     }
   },
+  // État local du composant
   data() {
     return {
-      isEditing: false,
-      editedCharacter: null,
-      maitrisesList: [
+      isEditing: false,           // Contrôle le mode d'affichage
+      editedCharacter: null,      // Copie de travail du personnage en édition
+      maitrisesList: [           // Liste des maîtrises disponibles
         'Acrobaties', 'Arcanes', 'Athlétisme', 'Discrétion', 'Dressage',
         'Escamotage', 'Histoire', 'Intimidation', 'Investigation', 'Médecine',
         'Nature', 'Perception', 'Persuasion', 'Religion', 'Représentation',
@@ -158,21 +164,23 @@ export default {
     }
   },
   methods: {
+    // Active le mode édition
     startEdit() {
       this.editedCharacter = JSON.parse(JSON.stringify(this.character));
-      // Initialise les maîtrises si elles n'existent pas
+      // Initialise les maîtrises si nécessaire
       if (!this.editedCharacter.maitrises) {
         this.editedCharacter.maitrises = {};
         this.maitrisesList.forEach(m => {
           this.editedCharacter.maitrises[m] = 0;
         });
       }
-      // Initialise les compétences si elles n'existent pas
+      // Initialise les compétences si nécessaire
       if (!this.editedCharacter.competences) {
         this.editedCharacter.competences = [];
       }
       this.isEditing = true;
     },
+    // Sauvegarde les modifications
     async saveEdit() {
       try {
         const response = await fetch(`http://localhost:3000/api/characters/${this.character._id}`, {
@@ -191,13 +199,16 @@ export default {
         console.error('Erreur lors de la modification du personnage:', error);
       }
     },
+    // Annule l'édition en cours
     cancelEdit() {
       this.isEditing = false;
       this.editedCharacter = null;
     },
+    // Ajoute une compétence
     addCompetence(competence) {
       this.editedCharacter.competences.push(competence);
     },
+    // Supprime une compétence
     removeCompetence(index) {
       this.editedCharacter.competences.splice(index, 1);
     }
@@ -206,6 +217,7 @@ export default {
 </script>
 
 <style scoped>
+/* Style de la carte */
 .character-card {
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -216,13 +228,14 @@ export default {
   margin: 0 auto;
 }
 
+/* Style du formulaire d'édition */
 .edit-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-/* En-tête */
+/* Style de l'en-tête */
 .header-section {
   display: flex;
   gap: 20px;
@@ -230,6 +243,7 @@ export default {
   padding-bottom: 15px;
 }
 
+/* Grille des informations de droite */
 .header-right {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -237,7 +251,7 @@ export default {
   flex: 1;
 }
 
-/* Section principale */
+/* Layout principal en 3 colonnes */
 .main-section {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -246,7 +260,7 @@ export default {
   width: 100%;
 }
 
-/* Colonne de gauche - Caractéristiques */
+/* Style de la colonne gauche */
 .left-column {
   border-right: 1px solid #ddd;
   padding-right: 30px;
@@ -255,6 +269,7 @@ export default {
   align-items: center;
 }
 
+/* Liste des caractéristiques */
 .characteristics-list {
   display: flex;
   flex-direction: column;
@@ -262,6 +277,7 @@ export default {
   width: 100%;
 }
 
+/* Style des boîtes de caractéristiques */
 .characteristic-box {
   background: #f5f5f5;
   padding: 10px;
@@ -270,17 +286,13 @@ export default {
   width: 100%;
 }
 
-.characteristic-box input {
-  width: 75%;
-  text-align: center;
-}
-
-/* Colonne du milieu - Maîtrises */
+/* Style de la colonne centrale */
 .middle-column {
   padding: 0 20px;
   border-right: 1px solid #ddd;
 }
 
+/* Liste des maîtrises */
 .skills-list {
   display: flex;
   flex-direction: column;
@@ -288,6 +300,7 @@ export default {
   margin: 0 auto;
 }
 
+/* Style des éléments de maîtrise */
 .skill-item {
   display: flex;
   justify-content: space-between;
@@ -300,34 +313,32 @@ export default {
   text-align: center;
 }
 
-/* Colonne de droite - Stats */
+/* Style de la colonne droite */
 .right-column {
   padding-left: 10px;
   padding-right: 20px;
   padding-top: 100px;
 }
 
+/* Stats de combat */
 .combat-stats {
   display: flex;
   flex-direction: column;
   gap: 150px;
 }
 
+/* Style des boîtes de stats */
 .stat-box {
   background: #f5f5f5;
   padding: 10px;
   border-radius: 8px;
   text-align: center;
   width: 100%;
+  max-width: 300px;
   margin: 0 auto;
 }
 
-.stat-box input {
-  width: 75%;
-  text-align: center;
-  margin: 0 auto;
-}
-
+/* Style des points de vie */
 .hp-box {
   background: #f5f5f5;
   padding: 10px;
@@ -350,45 +361,7 @@ export default {
   text-align: center;
 }
 
-/* Background */
-.background-section {
-  margin-top: 20px;
-}
-
-.background-section textarea {
-  width: 100%;
-  min-height: 100px;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-/* Styles communs */
-h4 {
-  color: #2c6578;
-  margin-bottom: 15px;
-  border-bottom: 1px solid #c8aa6e;
-  padding-bottom: 5px;
-}
-
-input {
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 14px;
-}
-
-.form-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.form-group label {
-  font-weight: bold;
-}
-
-/* Mode affichage */
+/* Style de l'en-tête en mode affichage */
 .card-header {
   margin-bottom: 15px;
 }
@@ -405,12 +378,14 @@ input {
   flex-wrap: wrap;
 }
 
+/* Style des boutons d'action */
 .card-buttons {
   display: flex;
   gap: 10px;
   margin-top: 15px;
 }
 
+/* Style des boutons */
 .edit-character-btn,
 .delete-character-btn,
 .view-character-btn {
@@ -426,11 +401,12 @@ input {
 .delete-character-btn { background-color: #f44336; color: white; }
 .view-character-btn { background-color: #c8aa6e; color: white; }
 
+/* Effets de survol des boutons */
 .edit-character-btn:hover { background-color: #1976D2; }
 .delete-character-btn:hover { background-color: #D32F2F; }
 .view-character-btn:hover { background-color: #b89b5f; }
 
-/* Ajustements responsifs */
+/* Adaptations responsives */
 @media (max-width: 1400px) {
   .main-section {
     grid-template-columns: 1fr;
@@ -452,35 +428,4 @@ input {
     margin: 0 auto;
   }
 }
-
-/* Boutons */
-.button-group {
-  display: flex;
-  gap: 10px;
-  justify-content: flex-end;
-  margin-top: 20px;
-}
-
-.btn-save,
-.btn-cancel {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s;
-}
-
-.btn-save {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.btn-cancel {
-  background-color: #9e9e9e;
-  color: white;
-}
-
-.btn-save:hover { background-color: #388E3C; }
-.btn-cancel:hover { background-color: #757575; }
 </style> 

@@ -1,5 +1,7 @@
+<!-- Composant pour afficher la liste des musiques groupées par thème -->
 <template>
   <div class="musique-list">
+    <!-- Grille des thèmes disponibles -->
     <div class="themes-grid">
       <div 
         v-for="theme in themes" 
@@ -12,25 +14,30 @@
       </div>
     </div>
 
+    <!-- Conteneur des musiques du thème sélectionné -->
     <div v-if="selectedTheme" class="musiques-container">
       <h2>{{ selectedTheme }}</h2>
       <div class="musiques-list">
+        <!-- Boucle sur chaque musique du thème -->
         <div v-for="musique in musiquesByTheme" :key="musique._id" class="musique-item">
-          <!-- Mode affichage -->
+          <!-- Mode affichage de la musique -->
           <div v-if="!editingMusic || editingMusic._id !== musique._id">
             <h3>{{ musique.titre }}</h3>
             <p>Artiste: {{ musique.artiste }}</p>
+            <!-- Lien vers YouTube dans un nouvel onglet -->
             <a :href="musique.youtubeLink" target="_blank" rel="noopener noreferrer">
               Voir sur YouTube
             </a>
+            <!-- Boutons d'action -->
             <div class="button-group">
               <button class="btn-edit" @click="startEdit(musique)">Modifier</button>
               <button class="btn-delete" @click="deleteMusique(musique._id)">Supprimer</button>
             </div>
           </div>
 
-          <!-- Mode édition -->
+          <!-- Mode édition de la musique -->
           <div v-else class="edit-form">
+            <!-- Formulaire d'édition -->
             <div class="form-group">
               <label>Titre:</label>
               <input v-model="editingMusic.titre" type="text" required>
@@ -47,6 +54,7 @@
               <label>Lien YouTube:</label>
               <input v-model="editingMusic.youtubeLink" type="url" required>
             </div>
+            <!-- Boutons de sauvegarde/annulation -->
             <div class="button-group">
               <button class="btn-save" @click="saveEdit">Enregistrer</button>
               <button class="btn-cancel" @click="cancelEdit">Annuler</button>
@@ -61,22 +69,28 @@
 <script>
 export default {
   name: 'MusiqueList',
+  // État local du composant
   data() {
     return {
-      musiques: [],
-      selectedTheme: null,
-      editingMusic: null
+      musiques: [],          // Liste de toutes les musiques
+      selectedTheme: null,   // Thème actuellement sélectionné
+      editingMusic: null     // Musique en cours d'édition
     }
   },
+  // Propriétés calculées
   computed: {
+    // Extrait la liste unique des thèmes
     themes() {
       return [...new Set(this.musiques.map(m => m.theme))];
     },
+    // Filtre les musiques par thème sélectionné
     musiquesByTheme() {
       return this.musiques.filter(m => m.theme === this.selectedTheme);
     }
   },
+  // Méthodes du composant
   methods: {
+    // Récupère toutes les musiques depuis l'API
     async fetchMusiques() {
       try {
         const response = await fetch('http://localhost:3000/api/musiques');
@@ -87,15 +101,19 @@ export default {
         console.error('Erreur lors de la récupération des musiques:', error);
       }
     },
+    // Bascule la sélection d'un thème
     toggleTheme(theme) {
       this.selectedTheme = this.selectedTheme === theme ? null : theme;
     },
+    // Active le mode édition pour une musique
     startEdit(musique) {
       this.editingMusic = { ...musique };
     },
+    // Annule l'édition en cours
     cancelEdit() {
       this.editingMusic = null;
     },
+    // Sauvegarde les modifications d'une musique
     async saveEdit() {
       try {
         const response = await fetch(`http://localhost:3000/api/musiques/${this.editingMusic._id}`, {
@@ -114,6 +132,7 @@ export default {
         console.error('Erreur lors de la modification de la musique:', error);
       }
     },
+    // Supprime une musique
     async deleteMusique(id) {
       if (confirm('Êtes-vous sûr de vouloir supprimer cette musique ?')) {
         try {
@@ -130,6 +149,7 @@ export default {
       }
     }
   },
+  // Hook de cycle de vie : chargement initial des données
   mounted() {
     this.fetchMusiques();
   }
@@ -137,10 +157,12 @@ export default {
 </script>
 
 <style scoped>
+/* Style du conteneur principal */
 .musique-list {
   padding: 20px;
 }
 
+/* Grille des thèmes */
 .themes-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -148,6 +170,7 @@ export default {
   margin-bottom: 30px;
 }
 
+/* Style des cartes de thème */
 .theme-card {
   padding: 15px;
   background-color: #f5f5f5;
@@ -157,6 +180,7 @@ export default {
   transition: all 0.3s ease;
 }
 
+/* Effets de survol et état actif des cartes */
 .theme-card:hover {
   background-color: #e0e0e0;
 }
@@ -166,16 +190,19 @@ export default {
   color: white;
 }
 
+/* Conteneur des musiques */
 .musiques-container {
   margin-top: 20px;
 }
 
+/* Grille responsive des musiques */
 .musiques-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
   gap: 20px;
 }
 
+/* Style des cartes de musique */
 .musique-item {
   padding: 15px;
   border: 1px solid #ddd;
@@ -187,6 +214,7 @@ export default {
   margin: 0 0 10px 0;
 }
 
+/* Style des liens YouTube */
 .musique-item a {
   color: #4CAF50;
   text-decoration: none;
@@ -198,12 +226,14 @@ export default {
   text-decoration: underline;
 }
 
+/* Style des groupes de boutons */
 .button-group {
   display: flex;
   gap: 10px;
   margin-top: 10px;
 }
 
+/* Styles communs des boutons */
 .btn-edit, .btn-delete, .btn-save, .btn-cancel {
   padding: 6px 12px;
   border: none;
@@ -213,6 +243,7 @@ export default {
   transition: background-color 0.3s;
 }
 
+/* Styles spécifiques des boutons */
 .btn-edit {
   background-color: #2196F3;
   color: white;
@@ -233,12 +264,14 @@ export default {
   color: white;
 }
 
+/* Style du formulaire d'édition */
 .edit-form {
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 
+/* Style des groupes de champs */
 .form-group {
   display: flex;
   flex-direction: column;
@@ -256,6 +289,7 @@ export default {
   font-size: 14px;
 }
 
+/* Effets de survol des boutons */
 .btn-edit:hover { background-color: #1976D2; }
 .btn-delete:hover { background-color: #D32F2F; }
 .btn-save:hover { background-color: #388E3C; }

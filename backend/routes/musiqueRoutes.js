@@ -1,8 +1,10 @@
+// Import des dépendances nécessaires
 const express = require('express');
 const router = express.Router();
 const Musique = require('../models/Musique');
 
 // Route GET pour récupérer toutes les musiques
+// Tri par thème puis par titre
 router.get('/musiques', async (req, res) => {
     try {
         const musiques = await Musique.find().sort({ theme: 1, titre: 1 });
@@ -13,7 +15,8 @@ router.get('/musiques', async (req, res) => {
     }
 });
 
-// Route GET pour récupérer les musiques par thème
+// Route GET pour récupérer les musiques d'un thème spécifique
+// Tri par titre
 router.get('/musiques/theme/:theme', async (req, res) => {
     const { theme } = req.params;
     try {
@@ -25,7 +28,8 @@ router.get('/musiques/theme/:theme', async (req, res) => {
     }
 });
 
-// Route POST pour ajouter une nouvelle musique
+// Route POST pour créer une nouvelle musique
+// Validation automatique grâce au schéma Mongoose
 router.post('/musiques', async (req, res) => {
     try {
         const musique = new Musique(req.body);
@@ -37,7 +41,8 @@ router.post('/musiques', async (req, res) => {
     }
 });
 
-// Route DELETE pour supprimer une musique
+// Route DELETE pour supprimer une musique par son ID
+// Vérifie l'existence avant la suppression
 router.delete('/musiques/:id', async (req, res) => {
     try {
         const musique = await Musique.findByIdAndDelete(req.params.id);
@@ -51,13 +56,17 @@ router.delete('/musiques/:id', async (req, res) => {
     }
 });
 
-// Route PUT pour mettre à jour une musique
+// Route PUT pour mettre à jour une musique par son ID
+// Validation et retourne la version mise à jour
 router.put('/musiques/:id', async (req, res) => {
     try {
         const musique = await Musique.findByIdAndUpdate(
             req.params.id,
             req.body,
-            { new: true, runValidators: true }
+            { 
+                new: true,          // Retourne le document mis à jour
+                runValidators: true // Active la validation du schéma
+            }
         );
         if (!musique) {
             return res.status(404).json({ error: 'Musique non trouvée' });
@@ -69,4 +78,5 @@ router.put('/musiques/:id', async (req, res) => {
     }
 });
 
+// Export du routeur pour utilisation dans l'application
 module.exports = router; 
