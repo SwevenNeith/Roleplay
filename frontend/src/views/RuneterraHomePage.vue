@@ -5,6 +5,8 @@
     <router-link to="/runeterra-outils" class="link">Outils</router-link>
     <br>
     <router-link to="/runeterra-journal" class="link">Journal</router-link>
+    <br>
+    <router-link to="/runeterra-musique" class="link">Musique</router-link>
   </div>
 </template>
 

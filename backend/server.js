@@ -11,6 +11,7 @@ const characterRoutes = require('./routes/characterRoutes');
 const combatRoutes = require('./routes/combatRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const combinedRoutes = require('./routes/combinedRoutes'); // Importation des routes combinées
+const musiqueRoutes = require('./routes/musiqueRoutes'); // Ajout des routes pour les musiques
 
 const app = express();
 const PORT = 3000;
@@ -33,7 +34,7 @@ app.use('/api', characterRoutes);
 app.use('/api', combatRoutes);
 app.use('/api', sessionRoutes);
 app.use('/api', combinedRoutes); // Ajoute les routes combinées
-
+app.use('/api', musiqueRoutes); // Utilisation des routes pour les musiques
 
 // Démarrer le serveur
 app.listen(PORT, () => {

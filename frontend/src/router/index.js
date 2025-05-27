@@ -10,6 +10,7 @@ import OrigineDetails from '../views/OrigineDetails.vue';
 import RuneterraHomePage from '../views/RuneterraHomePage.vue';
 import Outils from '../views/Outils.vue';
 import Journal from '../views/Journal.vue';
+import Musique from '../views/Musique.vue';
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
@@ -22,6 +23,7 @@ const routes = [
   { path: '/runeterra', name: 'RuneterraHomePage', component: RuneterraHomePage },
   { path: '/runeterra-outils', name: 'Outils', component: Outils },
   { path: '/runeterra-journal', name: 'Journal', component: Journal },
+  { path: '/runeterra-musique', name: 'Musique', component: Musique },
 ];
 
 const router = createRouter({
