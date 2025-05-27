@@ -24,168 +24,28 @@
       <!-- Formulaire d'ajout / édition de personnage -->
       <div v-if="showCharacterForm" class="character-form">
         <h2>Ajouter un Personnage</h2>
-        <form @submit.prevent="saveCharacter">
-          <!-- Nom, Race, Classe, Joueur -->
-          <div class="form-row">
-            <label>Nom : <input type="text" v-model="character.nom" required class="input-small" /></label>
-            <label>Race : <input type="text" v-model="character.race" required class="input-small" /></label>
-            <label>Classe : <input type="text" v-model="character.classe" required class="input-small" /></label>
-            <label>Joueur : <input type="text" v-model="character.joueur" required class="input-small" /></label>
-          </div>
-          <!-- Expérience -->
-          <div class="form-row">
-            <label style="flex:1">
-              Expérience :
-              <input type="number" v-model.number="character.experience" min="0" max="100" required class="input-small" />
-            </label>
-          </div>
-          <!-- Inspiration/Armure/PV/Vitesse/DR -->
-          <div class="form-row top-stats-row">
-            <label>Inspiration : <input type="number" v-model.number="character.inspiration" min="0" step="1" class="input-small" /></label>
-            <label>Armure : <input type="number" v-model.number="character.armure" min="0" class="input-small" /></label>
-            <label>
-              PV :
-              <input type="number" v-model.number="character.pv[0]" min="0" class="input-small" placeholder="Actuels" />
-              /
-              <input type="number" v-model.number="character.pv[1]" min="0" class="input-small" placeholder="Max" required />
-            </label>
-            <label>Vitesse : <input type="number" v-model.number="character.vitesse" min="0" class="input-small" /></label>
-            <label>DR : <input type="text" v-model="character.deRecup" class="input-small" /></label>
-          </div>
-          <!-- Caracs / Maîtrises / Jets / Inventaire -->
-          <div class="form-central big">
-            <div class="form-col big">
-              <label v-for="carac in caracsList" :key="carac">
-                {{ carac }} :
-                <input type="number" v-model.number="character.caracs[carac]" step="1" required class="input-small" />
-              </label>
-            </div>
-            <div class="form-col big">
-              <div class="maitrises-list big">
-                <label v-for="maitrise in maitrisesList" :key="maitrise">
-                  {{ maitrise }} :
-                  <input type="number" v-model.number="character.maitrises[maitrise]" step="1" class="input-small" />
-                </label>
-              </div>
-            </div>
-            <div class="form-col big">
-              <div class="jets-section">
-                <div>
-                  <span>Jets réussis :</span>
-                  <input type="checkbox" v-for="i in 3" :key="'r'+i" v-model="character.jetsReussis[i-1]" />
-                </div>
-                <div>
-                  <span>Jets échoués :</span>
-                  <input type="checkbox" v-for="i in 3" :key="'e'+i" v-model="character.jetsEchoues[i-1]" />
-                </div>
-              </div>
-              <label>
-                Inventaire :
-                <textarea v-model="character.inventaire" rows="2" class="input-small"></textarea>
-              </label>
-            </div>
-          </div>
-          <!-- Background -->
-          <div class="form-row">
-            <label style="flex:1">
-              Background :
-              <textarea v-model="character.background" rows="3" class="input"></textarea>
-            </label>
-          </div>
-
-          <!-- Bouton Ajouter une compétence -->
-          <button type="button" @click="showCompetenceForm = true" class="add-competence-btn">
-            Ajouter une compétence
-          </button>
-
-          <!-- Liste des compétences ajoutées -->
-          <div v-if="character.competences.length > 0" class="competences-list">
-            <h3>Compétences :</h3>
-            <ul>
-              <li v-for="(competence, idx) in character.competences" :key="idx">
-                {{ competence.nom }} ({{ competence.type }})
-                <button @click="removeCompetence(idx)" class="delete-competence-btn">Supprimer</button>
-              </li>
-            </ul>
-          </div>
-
-          <!-- Formulaire pour ajouter une compétence -->
-          <div v-if="showCompetenceForm" class="competence-form">
-            <h3>Ajouter une Compétence</h3>
-            <label>
-              Nom de la compétence :
-              <input type="text" v-model="newCompetence.nom" required />
-            </label>
-            <div v-if="competenceError" class="competence-error">{{ competenceError }}</div>
-            <label>
-              Nom de la voie :
-              <input type="text" v-model="newCompetence.voie" required />
-            </label>
-            <div>
-              <label>
-                <input type="radio" value="Attaque" v-model="newCompetence.type" /> Attaque
-              </label>
-              <label>
-                <input type="radio" value="Soin" v-model="newCompetence.type" /> Soin
-              </label>
-              <label>
-                <input type="radio" value="Défense" v-model="newCompetence.type" /> Défense
-              </label>
-            </div>
-            <button type="button" @click="addCompetence" class="add-competence-btn">Ajouter</button>
-            <button type="button" @click="cancelCompetence" class="cancel-competence-btn">Annuler</button>
-          </div>
-
-          <!-- Image (nouvel input) -->
-          <div class="form-row">
-            <label style="flex:1">
-              Image :
-              <input
-                type="text"
-                v-model="character.image"
-                placeholder="Lien vers l'image"
-                class="input"
-              />
-            </label>
-          </div>
-
-          <!-- Boutons Annuler / Sauvegarder -->
-          <div class="form-actions">
-            <button type="button" @click="cancelCharacter">Annuler</button>
-            <button type="submit">Sauvegarder</button>
-          </div>
-        </form>
-        <div v-if="characterSaveMessage" class="save-message">{{ characterSaveMessage }}</div>
+        <CharacterForm
+          :initial-data="character"
+          submit-button-text="Ajouter"
+          @submit="saveCharacter"
+          @cancel="cancelCharacter"
+        />
       </div>
     </div>
 
     <!-- Divider entre formulaire/bouton et cards -->
     <hr class="divider-between" />
 
-    <!-- Cartes minimalistes (nom, race, classe, joueur) -->
+    <!-- Cartes de personnages -->
     <div class="character-cards">
-      <div 
-        v-for="(perso, idx) in characters" 
-        :key="idx" 
-        class="character-card big"
-        @click="openModal(perso)"
-      >
-        <div class="card-header">
-          <div class="card-header-name">{{ perso.nom }}</div>
-          <div class="card-header-details">
-            <span>Race : {{ perso.race }}</span>
-            <span>Classe : {{ perso.classe }}</span>
-            <span>Joueur : {{ perso.joueur }}</span>
-          </div>
-        </div>
-        <!-- On ne montre PAS background ni image ici -->
-
-        <!-- Boutons "Modifier" + "Supprimer" -->
-        <div class="card-buttons" @click.stop>
-          <button class="edit-character-btn" @click="editCharacter(idx)">Modifier</button>
-          <button class="delete-character-btn" @click="removeCharacter(idx)">Supprimer</button>
-        </div>
-      </div>
+      <CharacterCard
+        v-for="(perso, idx) in characters"
+        :key="perso._id"
+        :character="perso"
+        @delete="removeCharacter(idx)"
+        @view="openModal(perso)"
+        @update="updateCharacter"
+      />
     </div>
 
         <!-- Modale détaillée -->
@@ -468,9 +328,15 @@
 
 <script>
 import axios from 'axios';
+import CharacterCard from '@/components/CharacterCard.vue';
+import CharacterForm from '@/components/CharacterForm.vue';
 
 export default {
   name: 'Outils',
+  components: {
+    CharacterCard,
+    CharacterForm
+  },
   data() {
     return {
       counter: 1, // Le compteur commence maintenant à 1
@@ -598,27 +464,27 @@ export default {
       };
     },
     // Sauvegarde le personnage dans la liste
-    async saveCharacter() {
+    async saveCharacter(formData) {
       try {
         // Si les PV actuels ne sont pas définis, les définir à la valeur des PV max
-        if (!this.character.pv[0]) {
-          this.character.pv[0] = this.character.pv[1];
+        if (!formData.pv[0]) {
+          formData.pv[0] = formData.pv[1];
         }
 
         if (this.editIndex !== null && this.characters[this.editIndex]?._id) {
           // Si un personnage est en cours d'édition, mettez-le à jour
           const charId = this.characters[this.editIndex]._id;
-          await axios.put(`http://localhost:3000/api/characters/${charId}`, this.character);
+          await axios.put(`http://localhost:3000/api/characters/${charId}`, formData);
           this.editIndex = null;
         } else {
           // Sinon, créez un nouveau personnage
-          const response = await axios.post('http://localhost:3000/api/characters', this.character);
+          const response = await axios.post('http://localhost:3000/api/characters', formData);
 
           // Récupère l'ID du personnage créé
           const characterId = response.data._id;
 
           // Sauvegarde les compétences associées dans MongoDB
-          for (const competence of this.character.competences) {
+          for (const competence of formData.competences) {
             competence.characterId = characterId; // Associe l'ID du personnage à la compétence
             await axios.post('http://localhost:3000/api/competences', competence);
           }
@@ -657,14 +523,17 @@ export default {
         console.error("Erreur lors de la suppression du personnage:", error);
       }
     },
-    editCharacter(idx) {
-      // Vérifiez que l'index est valide
-      if (idx >= 0 && idx < this.characters.length) {
-        this.editIndex = idx;
-        this.character = JSON.parse(JSON.stringify(this.characters[idx])); // Copie profonde pour éviter les modifications directes
-        this.showCharacterForm = true;
-      } else {
-        console.error("Index invalide pour l'édition du personnage :", idx);
+    async updateCharacter(updatedCharacter) {
+      try {
+        // Met à jour la liste des personnages
+        const index = this.characters.findIndex(char => char._id === updatedCharacter._id);
+        if (index !== -1) {
+          this.characters[index] = updatedCharacter;
+        }
+        // Rafraîchit la liste des personnages depuis le serveur
+        await this.getAllCharacters();
+      } catch (error) {
+        console.error("Erreur lors de la mise à jour du personnage:", error);
       }
     },
     openModal(perso) {
