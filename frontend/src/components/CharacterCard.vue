@@ -1,4 +1,4 @@
-<!-- Composant pour afficher et éditer un personnage sous forme de carte -->
+// Composant pour afficher et éditer un personnage sous forme de carte
 <template>
   <div class="character-card big">
     <!-- Mode affichage simple -->

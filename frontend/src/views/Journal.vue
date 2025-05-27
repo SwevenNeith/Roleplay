@@ -1,17 +1,18 @@
 <template>
     <div>
-        <!-- En-tête de la page -->
+        <!-- En-tête de la page avec titre et description -->
         <h1>Journal</h1>
         <p>Page d'accueil du journal.</p>
 
-        <!-- Bouton pour afficher/masquer le formulaire d'ajout de session -->
+        <!-- Bouton d'ajout de session (visible uniquement quand le formulaire est caché) -->
         <button @click="showForm = true" class="add-button" v-if="!showForm">
             Ajouter une session
         </button>
-        <!-- Message de confirmation après sauvegarde -->
+
+        <!-- Message de confirmation temporaire après une action -->
         <div v-if="saveMessage" class="save-message">{{ saveMessage }}</div>
 
-        <!-- Formulaire d'ajout de session (composant réutilisable) -->
+        <!-- Formulaire de création/édition de session -->
         <SessionForm
             v-if="showForm"
             :initial-data="{ title: '', content: '', _id: null }"
@@ -19,32 +20,32 @@
             @cancel="handleCancel"
         />
 
-        <!-- Liste des entrées groupées par date -->
+        <!-- Liste des entrées du journal groupées par date -->
         <ul class="combined-list">
-            <!-- Boucle sur chaque date -->
+            <!-- Boucle sur chaque groupe de date -->
             <li v-for="(items, date) in groupedData" :key="date">
-                <!-- En-tête de la date avec toggle pour afficher/masquer les détails -->
+                <!-- En-tête de date cliquable pour afficher/masquer les entrées -->
                 <div @click="toggleDetails(date)" class="date-header">
                     {{ date }}
                 </div>
-                <!-- Liste des détails pour la date sélectionnée -->
+
+                <!-- Liste des entrées pour la date sélectionnée -->
                 <ul v-if="visibleDates.includes(date)" class="details-list">
-                    <!-- Boucle sur chaque élément de la date -->
                     <li v-for="(item, index) in items" :key="index">
-                        <!-- Affichage des sessions -->
+                        <!-- Affichage des sessions de jeu -->
                         <div v-if="item.type === 'Session'">
-                            <!-- Mode édition avec formulaire -->
+                            <!-- Formulaire d'édition si la session est en cours de modification -->
                             <SessionForm
                                 v-if="editingSession && editingSession._id === item._id"
                                 :initial-data="item"
                                 @submit="handleSubmit"
                                 @cancel="handleCancel"
                             />
-                            <!-- Mode affichage -->
+                            <!-- Affichage normal de la session -->
                             <div v-else>
                                 <h1 class="item-title"><strong>{{ item.title }}</strong></h1>
                                 <p class="session-content">{{ item.content }}</p>
-                                <!-- Boutons d'action -->
+                                <!-- Boutons de modification et suppression -->
                                 <div class="button-group">
                                     <button @click="editSession(item)" class="form-button edit-button">Modifier</button>
                                     <button @click="deleteSession(item)" class="form-button cancel-button">Supprimer</button>
@@ -52,7 +53,8 @@
                                 <hr class="divider" />
                             </div>
                         </div>
-                        <!-- Affichage des combats -->
+
+                        <!-- Affichage des rapports de combat -->
                         <div v-if="item.type === 'Combat'">
                             <h1 class="item-title"><strong>Combats</strong></h1>
                             <!-- Liste des participants -->

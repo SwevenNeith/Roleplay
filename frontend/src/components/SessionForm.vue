@@ -1,31 +1,33 @@
 <template>
-    <!-- Conteneur principal du formulaire -->
+    <!-- Conteneur principal du formulaire de session -->
     <div class="session-form">
-        <!-- Titre dynamique qui change selon le mode (création ou édition) -->
+        <!-- Titre dynamique basé sur le mode (création/édition) -->
         <h2>{{ isEditing ? 'Modifier la session' : 'Nouvelle session' }}</h2>
         
-        <!-- Conteneur du formulaire avec les champs -->
+        <!-- Conteneur des champs du formulaire -->
         <div class="form-container">
-            <!-- Champ de saisie pour le titre de la session -->
+            <!-- Champ pour le titre de la session -->
             <input 
                 type="text" 
-                v-model="formData.title"  <!-- Liaison bidirectionnelle avec la propriété title -->
+                v-model="formData.title"
                 placeholder="Titre" 
                 class="form-input"
             />
             
-            <!-- Zone de texte pour le contenu de la session -->
+            <!-- Zone de texte pour le contenu détaillé de la session -->
             <textarea 
-                v-model="formData.content"  <!-- Liaison bidirectionnelle avec la propriété content -->
+                v-model="formData.content"
                 placeholder="Contenu de la session" 
                 class="form-textarea"
             ></textarea>
             
-            <!-- Groupe de boutons d'action -->
+            <!-- Groupe de boutons pour les actions -->
             <div class="button-group">
-                <!-- Bouton Annuler qui émet un événement 'cancel' vers le parent -->
-                <button @click="$emit('cancel')" class="form-button cancel-button">Annuler</button>
-                <!-- Bouton de sauvegarde avec texte dynamique selon le mode -->
+                <!-- Bouton d'annulation qui émet l'événement 'cancel' -->
+                <button @click="$emit('cancel')" class="form-button cancel-button">
+                    Annuler
+                </button>
+                <!-- Bouton de sauvegarde avec texte adaptatif -->
                 <button @click="saveSession" class="form-button save-button">
                     {{ isEditing ? 'Enregistrer' : 'Sauvegarder' }}
                 </button>
