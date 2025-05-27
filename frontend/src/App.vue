@@ -1,5 +1,5 @@
 <template>
-  <div id="app">
+  <div id="app" :data-theme="currentTheme">
     <!-- Use dynamic component for the header -->
     <component :is="currentHeader" />
     <main class="content">
@@ -13,6 +13,7 @@ import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import Header from './components/Header.vue';
 import RuneterraHeader from './components/RuneterraHeader.vue';
+import './assets/styles/runeterra-theme.css';
 
 export default {
   components: {
@@ -33,28 +34,45 @@ export default {
       return 'Header';
     });
 
-    return { currentHeader };
+    const currentTheme = computed(() => {
+      return route.path.includes('runeterra') ? 'runeterra' : 'default';
+    });
+
+    return { currentHeader, currentTheme };
   },
 };
 </script>
 
 <style>
-/* Styles par défaut pour le contenu principal */
-main.content {
-  margin-top: 60px; /* Marge par rapport au header */
-  padding: 20px; /* Padding global */
-  box-sizing: border-box; /* Inclure padding et border dans la largeur */
-  width: 100%;
-  height: 100%;
-  overflow-x: hidden; /* Empêche les débordements horizontaux */
-  background-color: #f9f9f9; /* Fond clair par défaut */
-}
-
-/* S'assurer que les marges et paddings sont désactivés pour certaines pages */
-main {
+/* Reset global */
+* {
   margin: 0;
   padding: 0;
-  width: 100%;
+  box-sizing: border-box;
+}
+
+html, body {
   height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#app {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Styles par défaut pour le contenu principal */
+main.content {
+  flex: 1;
+  padding: 20px;
+  width: 100%;
+}
+
+/* Styles par défaut (non-Runeterra) */
+[data-theme="default"] main.content {
+  background-color: #f9f9f9;
+  margin-top: 60px;
 }
 </style>

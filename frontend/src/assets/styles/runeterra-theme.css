@@ -1,0 +1,86 @@
+/* Thème global pour les pages Runeterra */
+
+/* Couleurs principales */
+:root {
+  --runeterra-primary: #C8AA6E;    /* Éléments importants, titres, bordures */
+  --runeterra-background: #0A0A28; /* Fond principal */
+  --runeterra-secondary: #1E2A4B;  /* Boutons, overlays, sections */
+  --runeterra-text: #C0C0C0;      /* Texte secondaire, cadres légers */
+  --runeterra-error: #9A2A2A;     /* Messages d'erreur, suppression */
+  --runeterra-success: #1C5F4A;    /* Messages de succès */
+}
+
+/* Reset global pour le thème Runeterra */
+[data-theme="runeterra"] {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  background-color: var(--runeterra-background);
+  color: var(--runeterra-primary);
+}
+
+[data-theme="runeterra"] #app {
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+[data-theme="runeterra"] main.content {
+  min-height: calc(100vh - 60px); /* 60px est la hauteur du header */
+  margin: 60px 0 0 0 !important; /* Uniquement marge en haut pour le header */
+  padding: 20px !important;
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--runeterra-background);
+}
+
+/* Titres */
+[data-theme="runeterra"] h1,
+[data-theme="runeterra"] h2,
+[data-theme="runeterra"] h3,
+[data-theme="runeterra"] h4,
+[data-theme="runeterra"] h5,
+[data-theme="runeterra"] h6 {
+  color: var(--runeterra-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* Liens */
+[data-theme="runeterra"] a {
+  color: var(--runeterra-primary);
+  text-decoration: none;
+}
+
+[data-theme="runeterra"] a:hover {
+  color: var(--runeterra-text);
+}
+
+/* Boutons */
+[data-theme="runeterra"] .btn,
+[data-theme="runeterra"] button {
+  background-color: var(--runeterra-secondary);
+  color: var(--runeterra-primary);
+  border: 1px solid var(--runeterra-primary);
+}
+
+/* Messages */
+[data-theme="runeterra"] .error-message {
+  color: var(--runeterra-error);
+}
+
+[data-theme="runeterra"] .success-message {
+  color: var(--runeterra-success);
+}
+
+/* Sections et conteneurs */
+[data-theme="runeterra"] .section,
+[data-theme="runeterra"] .container {
+  background-color: var(--runeterra-secondary);
+  border: 1px solid var(--runeterra-text);
+}
+
+/* Texte secondaire */
+[data-theme="runeterra"] .secondary-text {
+  color: var(--runeterra-text);
+} 
