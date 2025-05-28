@@ -16,7 +16,6 @@
 
     <!-- Conteneur des musiques du thème sélectionné -->
     <div v-if="selectedTheme" class="musiques-container">
-      <h2>{{ selectedTheme }}</h2>
       <div class="musiques-list">
         <!-- Boucle sur chaque musique du thème -->
         <div v-for="musique in musiquesByTheme" :key="musique._id" class="musique-item">
