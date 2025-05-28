@@ -1,11 +1,31 @@
 const mongoose = require('mongoose');
 
+/**
+ * Schéma de personnage pour MongoDB
+ * Gère les informations de base, les statistiques, et la progression du personnage
+ */
 const characterSchema = new mongoose.Schema({
+  // Informations de base du personnage
   nom: { type: String, default: '' },
   race: { type: String, default: '' },
   classe: { type: String, default: '' },
   joueur: { type: String, default: '' },
-  experience: { type: Number, default: 0 },
+
+  // Système de progression
+  niveau: { 
+    type: Number, 
+    default: 1, 
+    min: 1,    // Niveau minimum
+    max: 5     // Niveau maximum
+  },
+  experience: { 
+    type: Number, 
+    default: 0  // Points d'expérience actuels
+    // Le maximum d'XP dépend du niveau : niveau * 100
+    // Exemple : Niveau 1 = 100 XP max, Niveau 2 = 200 XP max, etc.
+  },
+
+  // Caractéristiques du personnage
   caracs: {
     Force: { type: Number, default: 0 },
     Dextérité: { type: Number, default: 0 },

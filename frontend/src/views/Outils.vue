@@ -323,6 +323,14 @@
         </div>
       </div>
     </transition>
+
+    <!-- Modale d'expérience -->
+    <ExperienceModal
+      v-if="showExperienceModal"
+      :participants="combatParticipantsXP"
+      @submit="handleExperienceSubmit"
+      @close="showExperienceModal = false"
+    />
   </div>
 </template>
 
@@ -330,12 +338,14 @@
 import axios from 'axios';
 import CharacterCard from '@/components/CharacterCard.vue';
 import CharacterForm from '@/components/CharacterForm.vue';
+import ExperienceModal from '@/components/ExperienceModal.vue';
 
 export default {
   name: 'Outils',
   components: {
     CharacterCard,
-    CharacterForm
+    CharacterForm,
+    ExperienceModal
   },
   data() {
     return {
@@ -416,6 +426,9 @@ export default {
       
       // Message d'erreur pour les compétences
       competenceError: '',
+
+      showExperienceModal: false,
+      combatParticipantsXP: []
     };
   },
   mounted() {
@@ -647,38 +660,118 @@ export default {
     },
     async endCombat() {
       try {
-        // Prépare les données du combat
+        // Prépare les données des participants pour la modale d'XP
+        this.combatParticipantsXP = this.sortedCombatParticipants.map(participant => {
+          const character = this.characters.find(c => c.nom === participant.nom);
+          return {
+            nom: participant.nom,
+            niveau: character.niveau,
+            experienceActuelle: character.experience
+          };
+        });
+
+        // Affiche la modale d'XP
+        this.showExperienceModal = true;
+      } catch (error) {
+        console.error("Erreur lors de la fin du combat :", error);
+        alert("Erreur lors de la fin du combat.");
+      }
+    },
+    /**
+     * Gère l'attribution et la sauvegarde de l'expérience après un combat
+     * Cette méthode :
+     * 1. Met à jour l'XP et le niveau de chaque participant
+     * 2. Enregistre les informations de progression
+     * 3. Sauvegarde le rapport de combat complet
+     * @param {Object} experienceValues - XP gagnée par chaque participant
+     */
+    async handleExperienceSubmit(experienceValues) {
+      try {
+        // Stocke les informations d'expérience pour chaque participant
+        const experienceInfo = [];
+
+        // Met à jour l'XP de chaque participant
+        for (const [nom, xpGagnee] of Object.entries(experienceValues)) {
+          const character = this.characters.find(c => c.nom === nom);
+          if (character) {
+            // Sauvegarde les valeurs initiales pour le rapport
+            const niveauDebut = character.niveau;
+            const xpDebut = character.experience;
+
+            // Calcule la nouvelle expérience et le nouveau niveau
+            let newXP = character.experience + xpGagnee;
+            let newNiveau = character.niveau;
+
+            // Système de progression automatique de niveau
+            while (newXP >= newNiveau * 100 && newNiveau < 5) {
+              // Soustrait l'XP nécessaire pour le niveau actuel
+              newXP -= newNiveau * 100;
+              // Passe au niveau suivant
+              newNiveau++;
+            }
+
+            // Met à jour le personnage dans la base de données
+            await axios.put(`http://localhost:3000/api/characters/${character._id}`, {
+              ...character,
+              niveau: newNiveau,
+              experience: newXP
+            });
+
+            // Enregistre les informations de progression pour le rapport
+            experienceInfo.push({
+              nom: character.nom,
+              xpGagnee: xpGagnee,
+              niveauDebut: niveauDebut,
+              niveauFin: newNiveau,
+              xpDebut: xpDebut,
+              xpFin: newXP
+            });
+          }
+        }
+
+        // Prépare les données complètes du combat
         const combatData = {
-          date: new Date().toISOString().split('T')[0], // Date du combat
-          participants: this.sortedCombatParticipants.map(perso => ({
-            nom: perso.nom,
-            initiative: perso.initiative,
-            pvDebut: [...perso.pv] // PV au début du combat
+          date: new Date().toISOString().split('T')[0],
+          // Informations sur les participants
+          participants: this.sortedCombatParticipants.map(participant => ({
+            nom: participant.nom,
+            initiative: participant.initiative,
+            pvDebut: participant.pv,
+            experienceGagnee: experienceValues[participant.nom] || 0
           })),
-          tours: this.combatLog, // Log des tours et des actions
-          pvFinaux: this.sortedCombatParticipants.map(perso => ({
-            nom: perso.nom,
-            pvFin: [perso.pv[0], perso.pv[1]] // Derniers PV actuels et PV max
+          // Journal des actions du combat
+          tours: this.combatLog,
+          // État final des points de vie
+          pvFinaux: this.sortedCombatParticipants.map(participant => ({
+            nom: participant.nom,
+            pvFin: participant.pv
           })),
-          nombreTours: this.counter // Nombre total de tours
+          // Informations de progression des personnages
+          experience: experienceInfo,
+          // Statistiques du combat
+          nombreTours: this.counter
         };
 
-        // Envoie les données du combat au backend
+        // Sauvegarde le rapport de combat
         await axios.post('http://localhost:3000/api/combats', combatData);
 
-        // Réinitialise la phase de combat
+        // Réinitialise l'interface après la sauvegarde
+        this.showExperienceModal = false;
         this.showCombatPhase = false;
         this.showCombatList = false;
         this.selectedCombatCharacters = [];
         this.selectedCombatParticipants = [];
         this.selectedParticipantIndex = 0;
         this.counter = 1;
-        this.combatLog = []; // Réinitialise le log du combat
+        this.combatLog = [];
 
-        alert("Combat terminé et sauvegardé avec succès !");
+        // Rafraîchit la liste des personnages pour afficher les nouvelles valeurs
+        await this.getAllCharacters();
+
+        alert("Combat terminé et expérience attribuée avec succès !");
       } catch (error) {
-        console.error("Erreur lors de la sauvegarde du combat :", error);
-        alert("Erreur lors de la sauvegarde du combat.");
+        console.error("Erreur lors de l'attribution de l'expérience :", error);
+        alert("Erreur lors de l'attribution de l'expérience.");
       }
     },
     // Fonction utilitaire pour créer un slug

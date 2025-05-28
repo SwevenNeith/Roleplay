@@ -99,6 +99,19 @@
                                     Nom : {{ pvFinal.nom }}, PV Fin : {{ pvFinal.pvFin[0] }}/{{ pvFinal.pvFin[1] }}
                                 </li>
                             </ul>
+                            <!-- Informations d'expérience -->
+                            <p><strong>Expérience gagnée :</strong></p>
+                            <ul>
+                                <li v-for="exp in item.experience" :key="exp.nom">
+                                    {{ exp.nom }} : 
+                                    <span>+{{ exp.xpGagnee }} XP</span>
+                                    <br>
+                                    <span class="xp-details">
+                                        Niveau {{ exp.niveauDebut }} → {{ exp.niveauFin }},
+                                        XP : {{ exp.xpDebut }} → {{ exp.xpFin }}
+                                    </span>
+                                </li>
+                            </ul>
                             <p>Nombre de tours : {{ item.nombreTours }}</p>
                         </div>
                     </li>
@@ -395,5 +408,11 @@ p, ul, li {
 
 .cancel-button:hover {
     background-color: #d32f2f;
+}
+
+.xp-details {
+    font-size: 0.9em;
+    color: #666;
+    margin-left: 20px;
 }
 </style>

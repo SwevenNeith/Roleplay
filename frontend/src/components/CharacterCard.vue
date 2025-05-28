@@ -10,7 +10,14 @@
           <span>Race : {{ character.race }}</span>
           <span>Classe : {{ character.classe }}</span>
           <span>Joueur : {{ character.joueur }}</span>
+          <span>Niveau : {{ character.niveau }}</span>
         </div>
+      </div>
+
+      <!-- Barre d'expérience -->
+      <div class="xp-bar-container">
+        <div class="xp-bar" :style="{ width: xpPercentage + '%' }"></div>
+        <span class="xp-label">{{ character.experience }}/{{ maxXP }} XP</span>
       </div>
 
       <!-- Boutons d'action -->
@@ -161,6 +168,14 @@ export default {
         'Nature', 'Perception', 'Persuasion', 'Religion', 'Représentation',
         'Survie', 'Tromperie', 'Perception passive', 'Performance', 'Survie urbaine'
       ]
+    }
+  },
+  computed: {
+    maxXP() {
+      return this.character.niveau * 100;
+    },
+    xpPercentage() {
+      return (this.character.experience / this.maxXP) * 100;
     }
   },
   methods: {
@@ -427,5 +442,34 @@ export default {
     max-width: 400px;
     margin: 0 auto;
   }
+}
+
+/* Style de la barre d'expérience */
+.xp-bar-container {
+  position: relative;
+  height: 14px;
+  background: #eee;
+  border-radius: 8px;
+  margin: 10px 0;
+  width: 100%;
+  overflow: hidden;
+}
+
+.xp-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #c8aa6e 60%, #2c6578 100%);
+  border-radius: 8px 0 0 8px;
+  transition: width 0.4s;
+}
+
+.xp-label {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 0.9em;
+  color: #2c6578;
+  font-weight: bold;
+  text-shadow: 0 0 2px white;
 }
 </style> 

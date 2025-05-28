@@ -24,8 +24,23 @@
             <input v-model="formData.joueur" type="text" required>
           </div>
           <div class="form-group">
+            <label>Niveau :</label>
+            <select v-model.number="formData.niveau" @change="updateMaxXP">
+              <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+            </select>
+          </div>
+          <div class="form-group">
             <label>Expérience :</label>
-            <input v-model.number="formData.experience" type="number" min="0" max="100">
+            <div class="xp-input-container">
+              <input 
+                v-model.number="formData.experience" 
+                type="number" 
+                min="0" 
+                :max="maxXP"
+                @input="handleXPChange"
+              >
+              <span class="xp-max">/ {{ maxXP }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -174,7 +189,8 @@ export default {
         'Escamotage', 'Histoire', 'Intimidation', 'Investigation', 'Médecine',
         'Nature', 'Perception', 'Persuasion', 'Religion', 'Représentation',
         'Survie', 'Tromperie', 'Perception passive', 'Performance', 'Survie urbaine'
-      ]
+      ],
+      maxXP: 100 // Valeur par défaut pour le niveau 1
     }
   },
   // Hook de cycle de vie
@@ -186,6 +202,7 @@ export default {
         this.formData.maitrises[m] = 0;
       });
     }
+    this.updateMaxXP(); // Initialise le maximum d'XP
   },
   // Méthodes du composant
   methods: {
@@ -200,6 +217,23 @@ export default {
     // Sauvegarde le personnage
     saveCharacter() {
       this.$emit('submit', this.formData);
+    },
+    // Met à jour le maximum d'XP en fonction du niveau
+    updateMaxXP() {
+      this.maxXP = this.formData.niveau * 100;
+      // Ajuste l'XP si elle dépasse le nouveau maximum
+      if (this.formData.experience > this.maxXP) {
+        this.formData.experience = this.maxXP;
+      }
+    },
+    // Gère les changements d'XP et la progression de niveau
+    handleXPChange() {
+      if (this.formData.experience >= this.maxXP && this.formData.niveau < 5) {
+        const excessXP = this.formData.experience - this.maxXP;
+        this.formData.niveau++;
+        this.updateMaxXP();
+        this.formData.experience = excessXP;
+      }
     }
   }
 }
@@ -459,5 +493,24 @@ input {
     max-width: 400px;
     margin: 0 auto;
   }
+}
+
+.xp-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.xp-max {
+  color: #666;
+  font-size: 0.9em;
+}
+
+select {
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  width: 100%;
 }
 </style> 
