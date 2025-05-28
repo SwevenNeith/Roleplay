@@ -25,12 +25,15 @@
             <!-- Boucle sur chaque groupe de date -->
             <li v-for="(items, date) in groupedData" :key="date">
                 <!-- En-tête de date cliquable pour afficher/masquer les entrées -->
-                <div @click="toggleDetails(date)" class="date-header">
+                <div 
+                    @click="toggleDetails(date)" 
+                    :class="['date-header', { active: activeDate === date }]"
+                >
                     {{ date }}
                 </div>
 
                 <!-- Liste des entrées pour la date sélectionnée -->
-                <ul v-if="visibleDates.includes(date)" class="details-list">
+                <ul v-if="activeDate === date" class="details-list">
                     <li v-for="(item, index) in items" :key="index">
                         <!-- Affichage des sessions de jeu -->
                         <div v-if="item.type === 'Session'">
@@ -120,7 +123,7 @@ export default {
             showForm: false,         // Contrôle l'affichage du formulaire
             saveMessage: '',         // Message de confirmation
             combinedData: [],        // Données combinées (sessions + combats)
-            visibleDates: [],        // Dates actuellement développées
+            activeDate: null,        // Date actuellement active (une seule à la fois)
             editingSession: null     // Session en cours d'édition
         };
     },
@@ -208,10 +211,12 @@ export default {
         },
         // Bascule l'affichage des détails pour une date
         toggleDetails(date) {
-            if (this.visibleDates.includes(date)) {
-                this.visibleDates = this.visibleDates.filter(d => d !== date);
+            // Si la date cliquée est déjà active, on la désactive
+            if (this.activeDate === date) {
+                this.activeDate = null;
             } else {
-                this.visibleDates.push(date);
+                // Sinon, on active la nouvelle date (ce qui désactive automatiquement l'ancienne)
+                this.activeDate = date;
             }
         },
         // Active le mode édition pour une session
@@ -316,11 +321,17 @@ p, ul, li {
     border-radius: 4px;
     font-size: 18px;
     color: #2c6578;
-    transition: background-color 0.3s;
+    transition: all 0.3s ease;
 }
 
 .date-header:hover {
     background-color: #e0e0e0;
+}
+
+/* Style pour la date active */
+.date-header.active {
+    background-color: #2c6578;
+    color: white;
 }
 
 /* Style de la liste des détails */
@@ -328,6 +339,19 @@ p, ul, li {
     margin-left: 20px;
     list-style-type: none;
     padding: 20px;
+    animation: slideDown 0.3s ease-out;
+}
+
+/* Animation d'ouverture */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .details-list li {
