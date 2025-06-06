@@ -1,7 +1,12 @@
 <template>
     <div>
       <!-- Vérifie que la voie est chargée -->
-      <VoieTemplate :voie="voie" :competences="competences" v-if="voie" />
+      <VoieTemplate 
+        :voie="voie" 
+        :competences="competences" 
+        v-if="voie"
+        @competence-added="fetchVoieData"
+      />
       <p v-else>Chargement des données...</p>
     </div>
   </template>

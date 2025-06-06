@@ -1371,15 +1371,6 @@ button:hover {
   color: #2c6578;
 }
 
-/* Boutons spécifiques (héritent du style commun) */
-.combat-btn,
-.cancel-combat-btn,
-.initiative-btn,
-.start-combat-btn,
-.add-character-btn {
-  /* Héritent du style commun */
-}
-
 .competence-form {
   margin-top: 15px;
   padding: 10px;

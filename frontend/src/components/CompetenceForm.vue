@@ -1,54 +1,81 @@
 <template>
-  <div class="competence-section">
-    <div v-if="!showForm" class="competence-list">
-      <h4>Compétences</h4>
-      <button class="add-btn" @click="showForm = true">Ajouter une compétence</button>
-      <div v-if="competences.length > 0" class="competences-grid">
-        <div v-for="(competence, idx) in competences" :key="idx" class="competence-item">
-          <div class="competence-header">
-            <strong>{{ competence.nom }}</strong>
-            <button class="remove-btn" @click="removeCompetence(idx)">×</button>
-          </div>
-          <div class="competence-details">
-            <span>Voie : {{ competence.voie }}</span>
-            <span>Type : {{ competence.type }}</span>
-          </div>
-        </div>
+  <!-- Formulaire d'ajout d'une nouvelle compétence -->
+  <div class="competence-form">
+    <div class="edit-form">
+      <h2>Ajouter une nouvelle compétence</h2>
+      
+      <!-- Champ pour le nom de la compétence (obligatoire) -->
+      <div class="form-group">
+        <label>Nom de la compétence :</label>
+        <input v-model="formData.nom" type="text" required @input="generateSlug">
       </div>
-      <p v-else class="no-competences">Aucune compétence ajoutée</p>
-    </div>
 
-    <div v-else class="competence-form">
-      <h4>Nouvelle Compétence</h4>
+      <!-- Menu déroulant pour le type de compétence (Attaque, Soin, Défense) -->
       <div class="form-group">
-        <label>Nom :</label>
-        <input v-model="newCompetence.nom" type="text" required>
+        <label>Type de compétence :</label>
+        <select v-model="formData.type">
+          <option value="">Sélectionner un type</option>
+          <option value="Attaque">Attaque</option>
+          <option value="Soin">Soin</option>
+          <option value="Défense">Défense</option>
+        </select>
       </div>
+
+      <!-- Champ pour la description de la compétence -->
       <div class="form-group">
-        <label>Voie :</label>
-        <input v-model="newCompetence.voie" type="text" required>
+        <label>Description :</label>
+        <textarea v-model="formData.description" rows="4"></textarea>
       </div>
+
+      <!-- Menu déroulant pour le niveau de la compétence (1 à 5) -->
       <div class="form-group">
-        <label>Type :</label>
-        <div class="radio-group">
-          <label>
-            <input type="radio" value="Attaque" v-model="newCompetence.type">
-            Attaque
-          </label>
-          <label>
-            <input type="radio" value="Soin" v-model="newCompetence.type">
-            Soin
-          </label>
-          <label>
-            <input type="radio" value="Défense" v-model="newCompetence.type">
-            Défense
-          </label>
-        </div>
+        <label>Niveau :</label>
+        <select v-model="formData.niveau">
+          <option value="">Sélectionner un niveau</option>
+          <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
+        </select>
       </div>
-      <div v-if="error" class="error-message">{{ error }}</div>
+
+      <!-- Champ pour les dégâts de la compétence -->
+      <div class="form-group">
+        <label>Dégâts :</label>
+        <input v-model="formData.degats" type="text">
+      </div>
+
+      <!-- Champ pour les effets sur les alliés -->
+      <div class="form-group">
+        <label>Effets sur les alliés :</label>
+        <textarea v-model="formData.allie" rows="2"></textarea>
+      </div>
+
+      <!-- Champ pour les effets sur les ennemis -->
+      <div class="form-group">
+        <label>Effets sur les ennemis :</label>
+        <textarea v-model="formData.ennemi" rows="2"></textarea>
+      </div>
+
+      <!-- Champ pour la sauvegarde de la compétence -->
+      <div class="form-group">
+        <label>Sauvegarde :</label>
+        <input v-model="formData.sauvegarde" type="text">
+      </div>
+
+      <!-- Champ pour la portée de la compétence -->
+      <div class="form-group">
+        <label>Portée :</label>
+        <input v-model="formData.portee" type="text">
+      </div>
+
+      <!-- Champ pour la durée de la compétence -->
+      <div class="form-group">
+        <label>Durée :</label>
+        <input v-model="formData.duree" type="text">
+      </div>
+
+      <!-- Boutons d'action du formulaire -->
       <div class="button-group">
-        <button class="save-btn" @click="addCompetence">Ajouter</button>
-        <button class="cancel-btn" @click="cancelAdd">Annuler</button>
+        <button class="btn-save" @click="saveCompetence">Ajouter la compétence</button>
+        <button class="btn-cancel" @click="$emit('cancel')">Annuler</button>
       </div>
     </div>
   </div>
@@ -57,187 +84,158 @@
 <script>
 export default {
   name: 'CompetenceForm',
+  // Props reçues du composant parent
   props: {
-    competences: {
-      type: Array,
-      required: true
+    voieSlug: {
+      type: String,
+      required: true // Le slug de la voie est obligatoire
     }
   },
+  // Données locales du formulaire
   data() {
     return {
-      showForm: false,
-      error: '',
-      newCompetence: {
-        nom: '',
-        voie: '',
-        type: ''
+      formData: {
+        nom: '',        // Nom de la compétence (obligatoire)
+        slug: '',       // Slug généré automatiquement
+        voie_slug: '',  // Slug de la voie associée
+        type: '',       // Type de compétence (Attaque, Soin, Défense)
+        description: '', // Description de la compétence
+        niveau: '',     // Niveau de la compétence (1-5)
+        degats: '',     // Dégâts infligés
+        allie: '',      // Effets sur les alliés
+        ennemi: '',     // Effets sur les ennemis
+        sauvegarde: '', // Type de sauvegarde
+        portee: '',     // Portée de la compétence
+        duree: ''       // Durée des effets
       }
     }
   },
   methods: {
-    addCompetence() {
-      if (!this.newCompetence.nom || !this.newCompetence.voie || !this.newCompetence.type) {
-        this.error = 'Veuillez remplir tous les champs';
-        return;
+    // Génère un slug à partir du nom de la compétence
+    // Le slug est utilisé comme identifiant unique dans l'URL
+    generateSlug() {
+      this.formData.slug = this.formData.nom
+        .toLowerCase()                    // Convertit en minuscules
+        .normalize('NFD')                 // Décompose les caractères accentués
+        .replace(/[\u0300-\u036f]/g, '')  // Supprime les accents
+        .replace(/[^a-z0-9]+/g, '-')      // Remplace les caractères spéciaux par des tirets
+        .replace(/(^-|-$)/g, '');         // Supprime les tirets au début et à la fin
+    },
+    // Envoie les données du formulaire au serveur
+    async saveCompetence() {
+      try {
+        // Ajoute le slug de la voie aux données
+        this.formData.voie_slug = this.voieSlug;
+
+        // Appel à l'API pour créer la nouvelle compétence
+        const response = await fetch('http://localhost:3000/api/competences', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(this.formData)
+        });
+
+        if (!response.ok) {
+          throw new Error('Erreur lors de la création de la compétence');
+        }
+
+        // Émet un événement pour informer le parent que la compétence a été ajoutée
+        this.$emit('competence-added');
+        // Réinitialise le formulaire
+        this.resetForm();
+      } catch (error) {
+        console.error('Erreur:', error);
+        alert('Une erreur est survenue lors de la création de la compétence');
       }
-
-      const competence = {
-        nom: this.newCompetence.nom,
-        voie: this.newCompetence.voie,
-        type: this.newCompetence.type,
-        slug: this.slugify(this.newCompetence.nom),
-        voie_slug: this.slugify(this.newCompetence.voie)
-      };
-
-      this.$emit('add-competence', competence);
-      this.resetForm();
     },
-    removeCompetence(index) {
-      this.$emit('remove-competence', index);
-    },
-    cancelAdd() {
-      this.resetForm();
-    },
+    // Réinitialise tous les champs du formulaire
     resetForm() {
-      this.newCompetence = {
+      this.formData = {
         nom: '',
-        voie: '',
-        type: ''
+        slug: '',
+        voie_slug: '',
+        type: '',
+        description: '',
+        niveau: '',
+        degats: '',
+        allie: '',
+        ennemi: '',
+        sauvegarde: '',
+        portee: '',
+        duree: ''
       };
-      this.error = '';
-      this.showForm = false;
-    },
-    slugify(str) {
-      return str
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .replace(/\s+/g, '-')
-        .replace(/[^\w-]+/g, '');
     }
   }
 }
 </script>
 
 <style scoped>
-.competence-section {
-  background-color: #f5f5f5;
-  border-radius: 4px;
-  padding: 15px;
-  margin-top: 15px;
+/* Style du conteneur principal du formulaire */
+.competence-form {
+  background: #18182a;
+  border: 1px solid #2c6578;
+  border-radius: 8px;
+  padding: 20px;
+  margin-bottom: 20px;
+  color: #c8aa6e;
 }
 
-.competence-list {
+/* Mise en page du formulaire */
+.edit-form {
   display: flex;
   flex-direction: column;
-  gap: 10px;
-}
-
-.competences-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 10px;
-  margin-top: 10px;
-}
-
-.competence-item {
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  padding: 10px;
-}
-
-.competence-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 5px;
-}
-
-.competence-details {
-  display: flex;
-  flex-direction: column;
-  font-size: 0.9em;
-  color: #666;
-}
-
-.form-group {
-  margin-bottom: 15px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 5px;
-  font-weight: bold;
-}
-
-.form-group input[type="text"] {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.radio-group {
-  display: flex;
   gap: 20px;
 }
 
-.radio-group label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-weight: normal;
+/* Style du titre */
+h2 {
+  color: #c8aa6e;
+  margin-bottom: 20px;
+  border-bottom: 2px solid #2c6578;
+  padding-bottom: 10px;
 }
 
+/* Style des groupes de champs */
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+/* Style des labels */
+.form-group label {
+  font-weight: bold;
+  color: #c8aa6e;
+}
+
+/* Style commun pour les champs de saisie */
+input, select, textarea {
+  padding: 10px;
+  border: 1px solid #2c6578;
+  border-radius: 4px;
+  background: #23233a;
+  color: #fff;
+  font-size: 14px;
+}
+
+/* Style spécifique pour la zone de texte */
+textarea {
+  resize: vertical;
+  min-height: 100px;
+}
+
+/* Mise en page des boutons */
 .button-group {
   display: flex;
   gap: 10px;
-  margin-top: 15px;
+  justify-content: flex-end;
+  margin-top: 20px;
 }
 
-.add-btn {
-  background-color: #4CAF50;
-  color: white;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  cursor: pointer;
-  align-self: flex-start;
-}
-
-.save-btn {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.cancel-btn {
-  background-color: #9e9e9e;
-  color: white;
-}
-
-.remove-btn {
-  background-color: transparent;
-  color: #f44336;
-  border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 0 5px;
-}
-
-.error-message {
-  color: #f44336;
-  margin-top: 5px;
-  font-size: 0.9em;
-}
-
-.no-competences {
-  color: #666;
-  font-style: italic;
-}
-
-button {
-  padding: 8px 16px;
+/* Style commun pour les boutons */
+.btn-save, .btn-cancel {
+  padding: 10px 20px;
   border: none;
   border-radius: 4px;
   cursor: pointer;
@@ -245,7 +243,24 @@ button {
   transition: background-color 0.3s;
 }
 
-button:hover {
-  opacity: 0.9;
+/* Style du bouton de sauvegarde */
+.btn-save {
+  background-color: #2c6578;
+  color: white;
+}
+
+/* Style du bouton d'annulation */
+.btn-cancel {
+  background-color: #4a4a4a;
+  color: white;
+}
+
+/* Effets de survol des boutons */
+.btn-save:hover {
+  background-color: #1e4a5a;
+}
+
+.btn-cancel:hover {
+  background-color: #333;
 }
 </style> 
