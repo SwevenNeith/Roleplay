@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const { Schema } = mongoose;
 
 /**
  * Schéma de personnage pour MongoDB
@@ -54,15 +55,7 @@ const characterSchema = new mongoose.Schema({
   inventaire: { type: String, default: '' },
   background: { type: String, default: '' },
   image: { type: String, default: '' },
-  competences: [
-    {
-      nom: { type: String, required: true },
-      voie: { type: String, required: true },
-      type: { type: String, enum: ['Attaque', 'Soin', 'Défense'], required: true },
-      slug: { type: String, required: true },
-      voie_slug: { type: String, required: true }
-    }
-  ]
+  competences: [{ type: Schema.Types.Mixed }]
 });
 
 module.exports = mongoose.model('Character', characterSchema, 'runeterra_characters');

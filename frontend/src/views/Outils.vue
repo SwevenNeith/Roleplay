@@ -491,16 +491,7 @@ export default {
           this.editIndex = null;
         } else {
           // Sinon, créez un nouveau personnage
-          const response = await axios.post('http://localhost:3000/api/characters', formData);
-
-          // Récupère l'ID du personnage créé
-          const characterId = response.data._id;
-
-          // Sauvegarde les compétences associées dans MongoDB
-          for (const competence of formData.competences) {
-            competence.characterId = characterId; // Associe l'ID du personnage à la compétence
-            await axios.post('http://localhost:3000/api/competences', competence);
-          }
+          await axios.post('http://localhost:3000/api/characters', formData);
         }
 
         // Rechargez la liste des personnages

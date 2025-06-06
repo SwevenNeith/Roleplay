@@ -13,7 +13,16 @@
         <div class="header-right">
           <div class="form-group">
             <label>Classe :</label>
-            <input v-model="formData.classe" type="text" required>
+            <select v-model="formData.classe" required>
+              <option value="">Choisir une classe</option>
+              <option 
+                v-for="classe in classes" 
+                :key="classe._id" 
+                :value="classe.slug"
+              >
+                {{ classe.nom }}
+              </option>
+            </select>
           </div>
           <div class="form-group">
             <label>Race :</label>
@@ -118,10 +127,29 @@
 
       <!-- Section des compétences -->
       <div class="competences-section">
-        <CompetenceForm
-          :competences="formData.competences"
-          @add-competence="addCompetence"
-          @remove-competence="removeCompetence"
+        <h3>Compétences</h3>
+        <div class="competences-list">
+          <div 
+            v-for="(competence, index) in formData.competences" 
+            :key="index"
+            class="competence-item"
+          >
+            <strong>{{ competence.nom }}</strong>
+            <span class="competence-type">{{ competence.type }}</span>
+            <div class="competence-voie">Voie : {{ competence.voie || competence.voie_nom || competence.voie_slug }}</div>
+            <button 
+              @click.prevent="removeCompetence(index)" 
+              class="remove-competence-btn"
+            >
+              ×
+            </button>
+          </div>
+        </div>
+        <CompetenceSelector
+          v-if="formData.classe"
+          :classe="formData.classe"
+          :existing-competences="formData.competences"
+          @select="addCompetence"
         />
       </div>
 
@@ -135,13 +163,13 @@
 </template>
 
 <script>
-// Import du composant de gestion des compétences
-import CompetenceForm from './CompetenceForm.vue';
+import axios from 'axios';
+import CompetenceSelector from './CompetenceSelector.vue';
 
 export default {
   name: 'CharacterForm',
   components: {
-    CompetenceForm
+    CompetenceSelector
   },
   // Props reçues du composant parent
   props: {
@@ -190,7 +218,8 @@ export default {
         'Nature', 'Perception', 'Persuasion', 'Religion', 'Représentation',
         'Survie', 'Tromperie', 'Perception passive', 'Performance', 'Survie urbaine'
       ],
-      maxXP: 100 // Valeur par défaut pour le niveau 1
+      maxXP: 100, // Valeur par défaut pour le niveau 1
+      classes: []
     }
   },
   // Hook de cycle de vie
@@ -203,9 +232,20 @@ export default {
       });
     }
     this.updateMaxXP(); // Initialise le maximum d'XP
+
+    // Charge la liste des classes
+    this.fetchClasses();
   },
   // Méthodes du composant
   methods: {
+    async fetchClasses() {
+      try {
+        const response = await axios.get('http://localhost:3000/api/classes');
+        this.classes = response.data;
+      } catch (error) {
+        console.error("Erreur lors de la récupération des classes:", error);
+      }
+    },
     // Ajoute une nouvelle compétence
     addCompetence(competence) {
       this.formData.competences.push(competence);
@@ -235,7 +275,14 @@ export default {
         this.formData.experience = excessXP;
       }
     }
-  }
+  },
+  watch: {
+    'formData.classe'(newClasse, oldClasse) {
+      if (newClasse !== oldClasse) {
+        this.formData.competences = [];
+      }
+    },
+  },
 }
 </script>
 
@@ -512,5 +559,58 @@ select {
   border-radius: 4px;
   font-size: 14px;
   width: 100%;
+}
+
+/* Nouveaux styles pour la section des compétences */
+.competences-section {
+  margin-top: 20px;
+  padding: 15px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.competences-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.competence-item {
+  position: relative;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f9f9f9;
+}
+
+.remove-competence-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  color: #c65757;
+  font-size: 1.2em;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+}
+
+.remove-competence-btn:hover {
+  color: #8f4040;
+}
+
+.competence-type {
+  display: block;
+  font-size: 0.8em;
+  color: #666;
+  margin-top: 5px;
+}
+
+.competence-voie {
+  font-size: 0.85em;
+  color: #888;
+  margin-top: 2px;
 }
 </style> 
