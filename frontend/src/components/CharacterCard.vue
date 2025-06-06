@@ -30,125 +30,23 @@
 
     <!-- Mode édition détaillée -->
     <div v-else>
-      <div class="edit-form">
-        <!-- En-tête du formulaire -->
-        <div class="header-section">
-          <div class="form-group">
-            <label>Nom du personnage :</label>
-            <input v-model="editedCharacter.nom" type="text" required>
-          </div>
-          <div class="header-right">
-            <div class="form-group">
-              <label>Classe :</label>
-              <input v-model="editedCharacter.classe" type="text" required>
-            </div>
-            <div class="form-group">
-              <label>Race :</label>
-              <input v-model="editedCharacter.race" type="text" required>
-            </div>
-            <div class="form-group">
-              <label>Joueur :</label>
-              <input v-model="editedCharacter.joueur" type="text" required>
-            </div>
-            <div class="form-group">
-              <label>Expérience :</label>
-              <input v-model.number="editedCharacter.experience" type="number" min="0" max="100">
-            </div>
-          </div>
-        </div>
-
-        <!-- Corps principal en 3 colonnes -->
-        <div class="main-section">
-          <!-- Colonne gauche : Caractéristiques -->
-          <div class="left-column">
-            <h4>Caractéristiques</h4>
-            <div class="characteristics-list">
-              <div v-for="(value, carac) in editedCharacter.caracs" :key="carac" class="characteristic-box">
-                <label>{{ carac }}</label>
-                <input v-model.number="editedCharacter.caracs[carac]" type="number" required>
-              </div>
-            </div>
-          </div>
-
-          <!-- Colonne centrale : Maîtrises -->
-          <div class="middle-column">
-            <h4>Maîtrises</h4>
-            <div class="skills-list">
-              <div v-for="(value, maitrise) in editedCharacter.maitrises" :key="maitrise" class="skill-item">
-                <label>{{ maitrise }}</label>
-                <input v-model.number="editedCharacter.maitrises[maitrise]" type="number" required>
-              </div>
-            </div>
-          </div>
-
-          <!-- Colonne droite : Stats de combat -->
-          <div class="right-column">
-            <div class="combat-stats">
-              <div class="stat-box">
-                <label>Inspiration</label>
-                <input v-model.number="editedCharacter.inspiration" type="number" min="0">
-              </div>
-              <div class="stat-box">
-                <label>Classe d'armure</label>
-                <input v-model.number="editedCharacter.armure" type="number" min="0">
-              </div>
-              <div class="stat-box">
-                <label>Initiative</label>
-                <input v-model.number="editedCharacter.initiative" type="number">
-              </div>
-              <div class="stat-box">
-                <label>Vitesse</label>
-                <input v-model.number="editedCharacter.vitesse" type="number" min="0">
-              </div>
-              <div class="hp-box">
-                <label>Points de vie</label>
-                <div class="hp-inputs">
-                  <input v-model.number="editedCharacter.pv[0]" type="number" min="0" placeholder="Actuels">
-                  <span>/</span>
-                  <input v-model.number="editedCharacter.pv[1]" type="number" min="0" placeholder="Maximum">
-                </div>
-              </div>
-              <div class="stat-box">
-                <label>Dé de récupération</label>
-                <input v-model="editedCharacter.deRecup" type="text">
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Section background -->
-        <div class="background-section">
-          <h4>Background</h4>
-          <textarea v-model="editedCharacter.background" rows="3"></textarea>
-        </div>
-
-        <!-- Section des compétences -->
-        <div class="competences-section">
-          <CompetenceForm
-            :competences="editedCharacter.competences"
-            @add-competence="addCompetence"
-            @remove-competence="removeCompetence"
-          />
-        </div>
-
-        <!-- Boutons de sauvegarde/annulation -->
-        <div class="button-group">
-          <button class="btn-save" @click="saveEdit">Enregistrer</button>
-          <button class="btn-cancel" @click="cancelEdit">Annuler</button>
-        </div>
-      </div>
+      <CharacterForm
+        :initialData="editedCharacter"
+        submit-button-text="Enregistrer"
+        @submit="saveEditFromForm"
+        @cancel="cancelEdit"
+      />
     </div>
   </div>
 </template>
 
 <script>
-// Import du composant de gestion des compétences
-import CompetenceForm from './CompetenceForm.vue';
+import CharacterForm from './CharacterForm.vue';
 
 export default {
   name: 'CharacterCard',
   components: {
-    CompetenceForm
+    CharacterForm
   },
   // Props reçues du composant parent
   props: {
@@ -195,19 +93,18 @@ export default {
       }
       this.isEditing = true;
     },
-    // Sauvegarde les modifications
-    async saveEdit() {
+    // Sauvegarde les modifications depuis CharacterForm
+    async saveEditFromForm(formData) {
       try {
         const response = await fetch(`http://localhost:3000/api/characters/${this.character._id}`, {
           method: 'PUT',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify(this.editedCharacter)
+          body: JSON.stringify(formData)
         });
-
         if (response.ok) {
-          this.$emit('update', this.editedCharacter);
+          this.$emit('update', formData);
           this.isEditing = false;
         }
       } catch (error) {
@@ -218,14 +115,6 @@ export default {
     cancelEdit() {
       this.isEditing = false;
       this.editedCharacter = null;
-    },
-    // Ajoute une compétence
-    addCompetence(competence) {
-      this.editedCharacter.competences.push(competence);
-    },
-    // Supprime une compétence
-    removeCompetence(index) {
-      this.editedCharacter.competences.splice(index, 1);
     }
   }
 }
