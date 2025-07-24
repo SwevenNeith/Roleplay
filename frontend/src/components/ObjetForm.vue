@@ -1,6 +1,7 @@
 <template>
   <div class="objet-form">
-    <h2>Ajouter un objet</h2>
+    <h2 v-if="initialData">Modifier l'objet</h2>
+    <h2 v-else>Ajouter un objet</h2>
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
         <label for="nom">Nom</label>
@@ -11,7 +12,7 @@
         <textarea id="description" v-model="formData.description"></textarea>
       </div>
       <div class="button-group">
-        <button class="btn-save" type="submit">Ajouter l'objet</button>
+        <button class="btn-save" type="submit">{{ initialData ? 'Enregistrer les modifications' : "Ajouter l'objet" }}</button>
         <button class="btn-cancel" type="button" @click="$emit('cancel')">Annuler</button>
       </div>
     </form>
@@ -36,6 +37,16 @@ export default {
       }
     }
   },
+  created() {
+    // Pré-remplissage si édition
+    if (this.initialData) {
+      this.formData = {
+        nom: this.initialData.nom || '',
+        slug: this.initialData.slug || '',
+        description: this.initialData.description || ''
+      };
+    }
+  },
   methods: {
     // Génère un slug à partir du nom
     generateSlug() {
@@ -45,19 +56,34 @@ export default {
         .replace(/[^a-z0-9]+/g, '-')
         .replace(/(^-|-$)/g, '');
     },
-    // Soumet le formulaire et crée l'objet via l'API
+    // Soumet le formulaire : POST si création, PUT si édition
     async handleSubmit() {
       try {
-        const response = await fetch('http://localhost:3000/api/objets', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(this.formData)
-        });
-        if (!response.ok) throw new Error("Erreur lors de la création de l'objet");
-        this.$emit('objet-added');
+        let response;
+        if (this.initialData && this.initialData.slug) {
+          // Édition : PUT
+          response = await fetch(`http://localhost:3000/api/objets/${this.initialData.slug}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.formData)
+          });
+        } else {
+          // Création : POST
+          response = await fetch('http://localhost:3000/api/objets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(this.formData)
+          });
+        }
+        if (!response.ok) throw new Error("Erreur lors de la sauvegarde de l'objet");
+        if (this.initialData) {
+          this.$emit('objet-updated');
+        } else {
+          this.$emit('objet-added');
+        }
         this.formData = { nom: '', slug: '', description: '' };
       } catch (error) {
-        alert("Erreur lors de la création de l'objet");
+        alert("Erreur lors de la sauvegarde de l'objet");
       }
     }
   }
