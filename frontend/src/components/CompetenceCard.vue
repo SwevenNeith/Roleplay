@@ -1,11 +1,26 @@
 <template>
   <!-- Carte cliquable représentant une compétence -->
-  <div class="competence-card" v-if="competence" @click="goToCompetence">
+  <div class="competence-card" @click="goToCompetence" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
     <h2>{{ competence.nom }}</h2>
     <p v-if="competence.description">
       {{ competence.description.substring(0, 80) }}
       <span v-if="competence.description.length > 80">...</span>
     </p>
+    <!-- Popover d'aperçu détaillé -->
+    <div v-if="showDetails" class="competence-popover" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
+      <h3>{{ competence.nom }}</h3>
+      <p v-if="competence.type"><strong>Type :</strong> {{ competence.type }}</p>
+      <p v-if="competence.description"><strong>Description :</strong> {{ competence.description }}</p>
+      <p v-if="competence.niveau"><strong>Niveau :</strong> {{ competence.niveau }}</p>
+      <p v-if="competence.degats"><strong>Dégâts :</strong> {{ competence.degats }}</p>
+      <p v-if="competence.allie"><strong>Effets sur les alliés :</strong> {{ competence.allie }}</p>
+      <p v-if="competence.ennemi"><strong>Effets sur les ennemis :</strong> {{ competence.ennemi }}</p>
+      <p v-if="competence.sauvegarde"><strong>Sauvegarde :</strong> {{ competence.sauvegarde }}</p>
+      <p v-if="competence.portee"><strong>Portée :</strong> {{ competence.portee }}</p>
+      <p v-if="competence.duree"><strong>Durée :</strong> {{ competence.duree }}</p>
+      <p v-if="competence.voie_slug"><strong>Voie associée :</strong> {{ competence.voie_slug }}</p>
+      <p v-if="competence.theme && competence.theme.length"><strong>Thèmes :</strong> {{ competence.theme.join(', ') }}</p>
+    </div>
   </div>
 </template>
 
@@ -16,6 +31,11 @@ export default {
     competence: {
       type: Object,
       required: true
+    }
+  },
+  data() {
+    return {
+      showDetails: false
     }
   },
   methods: {
@@ -37,6 +57,7 @@ export default {
   cursor: pointer;
   transition: box-shadow 0.2s;
   box-shadow: 0 2px 8px rgba(44,101,120,0.08);
+  position: relative;
 }
 .competence-card:hover {
   box-shadow: 0 4px 16px #2c6578;
@@ -50,5 +71,35 @@ p {
   margin: 0;
   color: #aaa;
   font-size: 1em;
+}
+.competence-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 320px;
+  max-width: 400px;
+  background: #23233a;
+  color: #eee;
+  border: 1px solid #2c6578;
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(44,101,120,0.18);
+  padding: 18px 22px;
+  z-index: 100;
+  margin-top: 8px;
+  font-size: 1em;
+  pointer-events: auto;
+}
+.competence-popover h3 {
+  color: #c8aa6e;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+.competence-popover p {
+  margin: 6px 0;
+  color: #eee;
+  font-size: 1em;
+}
+.competence-popover strong {
+  color: #c8aa6e;
 }
 </style>
