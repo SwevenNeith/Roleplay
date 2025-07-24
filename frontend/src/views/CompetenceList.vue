@@ -10,9 +10,13 @@
   <div>
     <div class="header-section">
       <h1>Liste des compétences</h1>
-      <button class="btn-add" @click="showForm = !showForm">
-        {{ showForm ? 'Annuler' : 'Ajouter une compétence' }}
-      </button>
+      <div>
+        <button class="btn-add" @click="showForm = !showForm">
+          {{ showForm ? 'Annuler' : 'Ajouter une compétence' }}
+        </button>
+        <button class="btn-delete" v-if="!modeSuppression" @click="modeSuppression = true">Supprimer</button>
+        <button class="btn-cancel" v-if="modeSuppression" @click="cancelSuppression">Annuler</button>
+      </div>
     </div>
 
     <!-- Filtres par thème -->
@@ -23,6 +27,12 @@
       </label>
     </div>
 
+    <!-- Bouton suppression groupée -->
+    <div v-if="modeSuppression && selectedSlugs.length" class="delete-bar">
+      <span>{{ selectedSlugs.length }} sélectionnée(s)</span>
+      <button class="btn-delete" @click="deleteSelected">Supprimer</button>
+    </div>
+
     <CompetenceForm
       v-if="showForm"
       @competence-added="handleCompetenceAdded"
@@ -31,11 +41,12 @@
 
     <!-- Grille de cards pour chaque compétence -->
     <div class="competence-cards-container">
-      <CompetenceCard
-        v-for="competence in filteredCompetences"
-        :key="competence.slug"
-        :competence="competence"
-      />
+      <div v-for="competence in filteredCompetences" :key="competence.slug" class="competence-card-wrapper">
+        <input v-if="modeSuppression" type="checkbox" class="select-checkbox" :value="competence.slug" v-model="selectedSlugs">
+        <CompetenceCard
+          :competence="competence"
+        />
+      </div>
     </div>
   </div>
 </template>
@@ -54,7 +65,9 @@ export default {
     return {
       competences: [],
       showForm: false,
-      selectedThemes: []
+      selectedThemes: [],
+      selectedSlugs: [],
+      modeSuppression: false
     }
   },
   computed: {
@@ -78,12 +91,25 @@ export default {
         const response = await fetch('http://localhost:3000/api/competences');
         const data = await response.json();
         this.competences = Array.isArray(data) ? data.filter(c => c) : [];
+        this.selectedSlugs = [];
+        this.modeSuppression = false;
       } catch (error) {
         console.error('Erreur lors de la récupération des compétences:', error);
       }
     },
     handleCompetenceAdded() {
       this.showForm = false;
+      this.fetchCompetences();
+    },
+    cancelSuppression() {
+      this.modeSuppression = false;
+      this.selectedSlugs = [];
+    },
+    async deleteSelected() {
+      if (!confirm('Voulez-vous vraiment supprimer les compétences sélectionnées ?')) return;
+      for (const slug of this.selectedSlugs) {
+        await fetch(`http://localhost:3000/api/competences/${slug}`, { method: 'DELETE' });
+      }
       this.fetchCompetences();
     }
   }
@@ -145,5 +171,55 @@ h1 {
 
 .btn-add:hover {
   background-color: #1e4a5a;
+}
+.competence-card-wrapper {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+}
+.select-checkbox {
+  margin-right: 8px;
+  margin-top: 8px;
+  accent-color: #c65757;
+  width: 18px;
+  height: 18px;
+}
+.delete-bar {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: #23233a;
+  color: #fff;
+  border-radius: 6px;
+  padding: 10px 18px;
+  margin-bottom: 12px;
+  border: 1px solid #c65757;
+}
+.btn-delete {
+  background: #c65757;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 18px;
+  font-size: 1em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-delete:hover {
+  background: #8f4040;
+}
+.btn-cancel {
+  background: #4a4a4a;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-left: 10px;
+  transition: background-color 0.3s;
+}
+.btn-cancel:hover {
+  background-color: #333;
 }
 </style>

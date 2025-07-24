@@ -62,4 +62,19 @@ router.put('/competences/:slug', async (req, res) => {
   }
 });
 
+// Supprimer une compétence existante
+router.delete('/competences/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const deleted = await Competence.findOneAndDelete({ slug });
+    if (!deleted) {
+      return res.status(404).json({ error: 'Compétence non trouvée' });
+    }
+    res.json({ message: 'Compétence supprimée avec succès' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la suppression de la compétence" });
+  }
+});
+
 module.exports = router;

@@ -4,6 +4,7 @@
     <button class="btn-edit" @click="showEdit = !showEdit">
       {{ showEdit ? 'Annuler' : 'Modifier' }}
     </button>
+    <button class="btn-delete" @click="deleteCompetence">Supprimer</button>
     <CompetenceForm
       v-if="showEdit"
       :initialData="competence"
@@ -52,6 +53,16 @@ export default {
     async handleCompetenceUpdated() {
       await this.fetchCompetence();
       this.showEdit = false;
+    },
+    async deleteCompetence() {
+      if (!confirm('Voulez-vous vraiment supprimer cette compétence ?')) return;
+      const slug = this.competence.slug;
+      const res = await fetch(`http://localhost:3000/api/competences/${slug}`, { method: 'DELETE' });
+      if (res.ok) {
+        this.$router.push('/runeterra-competences');
+      } else {
+        alert('Erreur lors de la suppression de la compétence');
+      }
     }
   }
 }
@@ -75,6 +86,21 @@ h1 {
 }
 .btn-edit:hover {
   background: #1e4a5a;
+}
+.btn-delete {
+  background: #c65757;
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 18px;
+  font-size: 1em;
+  margin-left: 12px;
+  margin-bottom: 18px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-delete:hover {
+  background: #8f4040;
 }
 p {
   margin: 8px 0;
