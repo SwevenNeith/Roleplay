@@ -7,6 +7,8 @@ import CompetenceList from "../views/CompetenceList.vue";
 import ClasseDetails from "../views/ClasseDetails.vue";
 import VoieDetails from "../views/VoieDetails.vue";
 import CompetenceDetails from "../views/CompetenceDetails.vue";
+import ObjetList from "../views/ObjetList.vue";
+import ObjetDetails from "../views/ObjetDetails.vue";
 import Map from '../views/Map.vue';
 import OrigineDetails from '../views/OrigineDetails.vue';
 import RuneterraHomePage from '../views/RuneterraHomePage.vue';
@@ -23,6 +25,8 @@ const routes = [
   { path: "/runeterra-voies/:slug", name: "VoieDetails", component: VoieDetails },
   { path: "/runeterra-competences", name: "CompetenceList", component: CompetenceList },
   { path: "/runeterra-competences/:slug", name: "CompetenceDetails", component: CompetenceDetails },
+  { path: "/runeterra-objets", name: "ObjetList", component: ObjetList },
+  { path: "/runeterra-objets/:slug", name: "ObjetDetails", component: ObjetDetails },
   { path: '/runeterra-map', name: 'Map', component: Map },
   { path: '/runeterra-origins/:slug', name: 'OrigineDetails', component: OrigineDetails },
   { path: '/runeterra-outils', name: 'Outils', component: Outils },

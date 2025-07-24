@@ -6,12 +6,14 @@ const cors = require('cors');
 const classeRoutes = require('./routes/classeRoutes'); // Import des routes
 const voieRoutes = require('./routes/voieRoutes');
 const competenceRoutes = require('./routes/competenceRoutes');
+const objetRoutes = require('./routes/objetRoutes'); // Ajout des routes pour les objets
 const origineRoutes = require('./routes/origineRoutes');
 const characterRoutes = require('./routes/characterRoutes');
 const combatRoutes = require('./routes/combatRoutes');
 const sessionRoutes = require('./routes/sessionRoutes');
 const combinedRoutes = require('./routes/combinedRoutes'); // Importation des routes combinées
 const musiqueRoutes = require('./routes/musiqueRoutes'); // Ajout des routes pour les musiques
+
 
 const app = express();
 const PORT = 3000;
@@ -35,6 +37,7 @@ app.use('/api', combatRoutes);
 app.use('/api', sessionRoutes);
 app.use('/api', combinedRoutes); // Ajoute les routes combinées
 app.use('/api', musiqueRoutes); // Utilisation des routes pour les musiques
+app.use('/api', objetRoutes); // Utilisation des routes pour les objets
 
 // Démarrer le serveur
 app.listen(PORT, () => {
