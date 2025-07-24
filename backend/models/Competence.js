@@ -14,6 +14,7 @@ const competenceSchema = new mongoose.Schema({
   sauvegarde: { type: String },
   portee: { type: String },
   duree: { type: String },
+  theme: { type: [String], default: [] }, // Liste de thèmes
 }, { strict: false }); // strict: false permet d'accepter d'autres champs si besoin
 
 // Exporte le modèle 'Competence' pour l'utiliser dans les routes

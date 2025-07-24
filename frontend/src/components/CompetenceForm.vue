@@ -102,6 +102,13 @@
         <input v-model="formData.duree" type="text">
       </div>
 
+      <!-- Champ pour les thèmes de la compétence -->
+      <div class="form-group">
+        <label>Thème(s) :</label>
+        <input v-model="themeInput" type="text" placeholder="Ex : maitre de l'air, vent, feu">
+        <small>Plusieurs thèmes séparés par une virgule.</small>
+      </div>
+
       <!-- Boutons d'action du formulaire -->
       <div class="button-group">
         <button class="btn-save" @click="saveCompetence">Ajouter la compétence</button>
@@ -136,11 +143,13 @@ export default {
         ennemi: '',     // Effets sur les ennemis
         sauvegarde: '', // Type de sauvegarde
         portee: '',     // Portée de la compétence
-        duree: ''       // Durée des effets
+        duree: '',       // Durée des effets
+        theme: []
       },
       classes: [],
       voies: [],
-      selectedClasseSlug: ''
+      selectedClasseSlug: '',
+      themeInput: ''
     }
   },
   computed: {
@@ -208,6 +217,12 @@ export default {
         } else {
           this.formData.niveau = undefined;
         }
+        // Découpe le champ thème en tableau
+        if (this.themeInput) {
+          this.formData.theme = this.themeInput.split(',').map(t => t.trim()).filter(t => t);
+        } else {
+          this.formData.theme = [];
+        }
 
         // Appel à l'API pour créer la nouvelle compétence
         const response = await fetch('http://localhost:3000/api/competences', {
@@ -245,8 +260,10 @@ export default {
         ennemi: '',
         sauvegarde: '',
         portee: '',
-        duree: ''
+        duree: '',
+        theme: []
       };
+      this.themeInput = '';
     }
   }
 }
