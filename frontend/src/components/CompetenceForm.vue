@@ -11,7 +11,29 @@
   <div class="competence-form">
     <div class="edit-form">
       <h2>Ajouter une nouvelle compétence</h2>
-      
+
+      <!-- Dropdown pour la classe -->
+      <div class="form-group" v-if="!voieSlug">
+        <label>Classe :</label>
+        <select v-model="selectedClasseSlug">
+          <option value="">Sélectionner une classe</option>
+          <option v-for="classe in classes" :key="classe.slug" :value="classe.slug">
+            {{ classe.nom }}
+          </option>
+        </select>
+      </div>
+
+      <!-- Dropdown pour la voie (dépend de la classe) -->
+      <div class="form-group" v-if="!voieSlug && selectedClasseSlug">
+        <label>Voie :</label>
+        <select v-model="formData.voie_slug">
+          <option value="">Sélectionner une voie</option>
+          <option v-for="voie in filteredVoies" :key="voie.slug" :value="voie.slug">
+            {{ voie.nom }}
+          </option>
+        </select>
+      </div>
+
       <!-- Champ pour le nom de la compétence (obligatoire) -->
       <div class="form-group">
         <label>Nom de la compétence :</label>
@@ -115,7 +137,34 @@ export default {
         sauvegarde: '', // Type de sauvegarde
         portee: '',     // Portée de la compétence
         duree: ''       // Durée des effets
+      },
+      classes: [],
+      voies: [],
+      selectedClasseSlug: ''
+    }
+  },
+  computed: {
+    filteredVoies() {
+      return this.voies.filter(v => v.classe_slug === this.selectedClasseSlug);
+    }
+  },
+  watch: {
+    voieSlug: {
+      immediate: true,
+      handler(newVal) {
+        if (newVal) {
+          this.formData.voie_slug = newVal;
+        }
       }
+    },
+    selectedClasseSlug(newSlug) {
+      // Réinitialise la voie si la classe change
+      this.formData.voie_slug = '';
+    }
+  },
+  created() {
+    if (!this.voieSlug) {
+      this.fetchClassesAndVoies();
     }
   },
   methods: {
@@ -128,6 +177,18 @@ export default {
         .replace(/[\u0300-\u036f]/g, '')  // Supprime les accents
         .replace(/[^a-z0-9]+/g, '-')      // Remplace les caractères spéciaux par des tirets
         .replace(/(^-|-$)/g, '');         // Supprime les tirets au début et à la fin
+    },
+    async fetchClassesAndVoies() {
+      try {
+        const [classesRes, voiesRes] = await Promise.all([
+          fetch('http://localhost:3000/api/classes'),
+          fetch('http://localhost:3000/api/voies')
+        ]);
+        this.classes = await classesRes.json();
+        this.voies = await voiesRes.json();
+      } catch (error) {
+        console.error('Erreur lors de la récupération des classes ou voies:', error);
+      }
     },
     // Envoie les données du formulaire au serveur
     async saveCompetence() {
