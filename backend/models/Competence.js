@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const competenceSchema = new mongoose.Schema({
   nom: { type: String, required: true },
   slug: { type: String, required: true, unique: true },
-  voie_slug: { type: String, required: true },
+  voie_slug: { type: String, required: false },
   type: { type: String, enum: ['Attaque', 'Soin', 'Défense'], required: true },
   description: { type: String },
   niveau: { type: Number },

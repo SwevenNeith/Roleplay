@@ -13,6 +13,7 @@
         <div class="dropdown-menu">
           <router-link to="/runeterra-classes">Classes</router-link>
           <router-link to="/runeterra-voies">Voies</router-link>
+          <router-link to="/runeterra-competences">Compétences</router-link>
         </div>
       </div>
     </nav>

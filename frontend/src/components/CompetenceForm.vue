@@ -96,7 +96,7 @@ export default {
   props: {
     voieSlug: {
       type: String,
-      required: true // Le slug de la voie est obligatoire
+      required: false // Le slug de la voie n'est plus obligatoire
     }
   },
   // Données locales du formulaire
@@ -132,8 +132,21 @@ export default {
     // Envoie les données du formulaire au serveur
     async saveCompetence() {
       try {
-        // Ajoute le slug de la voie aux données
-        this.formData.voie_slug = this.voieSlug;
+        // Validation : seul le nom est obligatoire
+        if (!this.formData.nom) {
+          alert('Veuillez remplir le nom de la compétence.');
+          return;
+        }
+        // Ajoute le slug de la voie aux données seulement si défini
+        if (this.voieSlug) {
+          this.formData.voie_slug = this.voieSlug;
+        }
+        // Conversion du niveau en nombre si renseigné
+        if (this.formData.niveau) {
+          this.formData.niveau = Number(this.formData.niveau);
+        } else {
+          this.formData.niveau = undefined;
+        }
 
         // Appel à l'API pour créer la nouvelle compétence
         const response = await fetch('http://localhost:3000/api/competences', {
