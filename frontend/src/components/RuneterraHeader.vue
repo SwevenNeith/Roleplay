@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche l'en-tête de la page.
+  Il affiche le titre de la page.
+-->
+
 <template>
   <header>
     <nav class="links">

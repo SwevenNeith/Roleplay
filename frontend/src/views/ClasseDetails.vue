@@ -1,3 +1,9 @@
+<!--
+  Ce composant affiche les détails d'une classe spécifique.
+  Il affiche le nom, la description et les voies associées à la classe.
+  Il affiche les compétences associées à chaque voie.
+-->
+
 <template>
   <div v-if="classe">
     <h1>{{ classe.nom }}</h1>

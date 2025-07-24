@@ -1,3 +1,11 @@
+<!--
+  Ce composant affiche un formulaire de voie.
+  Il permet de créer ou de modifier une voie.
+  Il affiche le nom, la classe associée et la description de la voie.
+  Il permet de sauvegarder la voie.
+  Il permet d'annuler les modifications.
+-->
+
 <template>
   <!-- Formulaire d'ajout d'une nouvelle voie -->
   <div class="voie-form">

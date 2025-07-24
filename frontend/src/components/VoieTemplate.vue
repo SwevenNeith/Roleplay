@@ -1,3 +1,10 @@
+<!--
+  Ce composant affiche les données d'une voie spécifique.
+  Il affiche le nom, la description et les compétences associées à la voie.
+  Il permet d'ajouter une compétence à la voie.
+  Il permet d'annuler l'ajout d'une compétence.
+-->
+
 <template>
     <div>
       <!-- Titre de la voie -->

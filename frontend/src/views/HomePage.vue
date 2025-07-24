@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche la page d'accueil.
+  Il affiche le titre, le contenu et le lien vers la page Runeterra.
+-->
+
 <template>
   <div>
     <h1>Accueil</h1>

@@ -1,3 +1,10 @@
+<!--
+  Ce composant affiche un sélecteur de compétences.
+  Il permet de sélectionner une compétence et de choisir son type.
+  Il permet de valider la compétence.
+  Il permet d'annuler la sélection.
+-->
+
 <template>
   <div class="competence-selector">
     <!-- État initial : bouton pour ajouter une compétence -->

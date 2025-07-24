@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche la carte du monde de Runeterra.
+  Il affiche les zones cliquables et les redirige vers la page d'origine correspondante.
+-->
+
 <template>
     <div class="fullscreen-map">
       <div class="map-container">

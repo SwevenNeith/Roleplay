@@ -1,3 +1,11 @@
+<!--
+  Ce composant affiche un formulaire de classe.
+  Il permet de créer ou de modifier une classe.
+  Il affiche le nom, la description, l'image et les caractéristiques de la classe.
+  Il permet de sauvegarder la classe.
+  Il permet d'annuler les modifications.
+-->
+
 <template>
   <div class="classe-form">
     <div class="edit-form">

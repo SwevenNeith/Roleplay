@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche les détails d'une voie spécifique.
+  Il affiche le nom, la description et les compétences associées à la voie.
+-->
+
 <template>
     <div>
       <!-- Vérifie que la voie est chargée -->

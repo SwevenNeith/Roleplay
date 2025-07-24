@@ -1,3 +1,9 @@
+<!--
+  Ce composant affiche une carte de classe.
+  Il affiche le nom et la description de la classe.
+  Il redirige vers la page de détails de la classe lorsqu'on clique sur la carte.
+-->
+
 <template>
   <!-- Carte cliquable représentant une classe -->
   <div class="classe-card" @click="goToClasse">

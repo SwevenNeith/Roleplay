@@ -1,4 +1,13 @@
-<!-- Vue principale pour la gestion des musiques -->
+<!--
+  Ce composant affiche la page des musiques.
+  Il affiche le titre, le contenu et les boutons d'annulation et de sauvegarde.
+  Il affiche les musiques sous forme de liste.
+  Il permet d'ajouter une musique.
+  Il permet d'annuler l'ajout d'une musique.
+  Il permet d'éditer une musique.
+  Il permet de supprimer une musique.
+-->
+
 <template>
     <div class="musique-page">
         <!-- En-tête de la page -->

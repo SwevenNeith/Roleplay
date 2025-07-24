@@ -1,4 +1,10 @@
-<!-- Composant pour afficher la liste des musiques groupées par thème -->
+<!--
+  Ce composant affiche la liste des musiques groupées par thème.
+  Il permet de sélectionner un thème et de voir les musiques associées.
+  Il permet d'éditer une musique.
+  Il permet de supprimer une musique.
+-->
+
 <template>
   <div class="musique-list">
     <!-- Grille des thèmes disponibles -->

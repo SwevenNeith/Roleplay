@@ -1,3 +1,9 @@
+<!--
+    Ce composant affiche un formulaire de session.
+    Il permet de créer ou de modifier une session.
+    Il affiche le titre, le contenu et les boutons d'annulation et de sauvegarde.
+-->
+
 <template>
     <!-- Conteneur principal du formulaire de session -->
     <div class="session-form">

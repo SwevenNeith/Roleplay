@@ -1,3 +1,11 @@
+<!--
+  Ce composant affiche un formulaire de compétence.
+  Il permet de créer ou de modifier une compétence.
+  Il affiche le nom, le type, la description, le niveau, les dégâts, les effets sur les alliés, les effets sur les ennemis, la sauvegarde, la portée et la durée de la compétence.
+  Il permet de sauvegarder la compétence.
+  Il permet d'annuler les modifications.
+-->
+
 <template>
   <!-- Formulaire d'ajout d'une nouvelle compétence -->
   <div class="competence-form">

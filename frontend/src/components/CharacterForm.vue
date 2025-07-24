@@ -1,4 +1,10 @@
-<!-- Composant réutilisable pour la création/modification de personnages -->
+<!-- 
+  Composant réutilisable pour la création/modification de personnages
+  Il permet de créer ou de modifier un personnage.
+  Il affiche les informations de base du personnage, ses caractéristiques, ses maîtrises, ses statistiques de combat, son background et ses compétences.
+  Il permet de sauvegarder le personnage.
+  Il permet d'annuler les modifications.
+-->
 <template>
   <div class="character-form">
     <div class="edit-form">

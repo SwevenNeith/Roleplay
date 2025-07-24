@@ -1,4 +1,8 @@
-// ======= src/components/Header.vue =======
+<!--
+  Ce composant affiche l'en-tête de la page.
+  Il affiche le titre de la page.
+-->
+
 <template>
   <header class="simple-header">
     <h1>Accueil</h1>

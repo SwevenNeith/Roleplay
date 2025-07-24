@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche la page d'accueil de l'univers Runeterra.
+  Il affiche le titre, le contenu et les liens vers les pages Outils, Journal et Musique.
+-->
+
 <template>
   <div>
     <h1>Runeterra</h1>

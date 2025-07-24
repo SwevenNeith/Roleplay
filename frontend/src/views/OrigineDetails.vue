@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche les détails d'une origine spécifique.
+  Il affiche le nom, la description, les traits et les régions associées à l'origine.
+-->
+
 <template>
     <div>
       <!-- Affichage des détails de l'origine via le composant OrigineTemplate -->

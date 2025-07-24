@@ -1,4 +1,10 @@
-// Composant pour afficher et éditer un personnage sous forme de carte
+<!--
+  Ce composant affiche une carte de personnage.
+  Il affiche le nom, la race, la classe, le joueur, le niveau et l'expérience du personnage.
+  Il permet d'éditer le personnage et de le supprimer.
+  Il permet de voir les détails du personnage.
+-->
+
 <template>
   <div class="character-card big">
     <!-- Mode affichage simple -->

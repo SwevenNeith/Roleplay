@@ -1,3 +1,13 @@
+<!--
+    Ce composant affiche le journal des sessions.
+    Il affiche le titre, le contenu et les boutons d'annulation et de sauvegarde.
+    Il affiche les sessions sous forme de liste.
+    Il permet d'ajouter une session.
+    Il permet d'annuler l'ajout d'une session.
+    Il permet d'éditer une session.
+    Il permet de supprimer une session.
+-->
+
 <template>
     <div>
         <!-- En-tête de la page avec titre et description -->

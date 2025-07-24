@@ -5,6 +5,7 @@
   - Attribuer de l'XP individuellement
   - Visualiser le niveau actuel et le maximum d'XP possible
 -->
+
 <template>
   <!-- Overlay semi-transparent qui couvre tout l'écran -->
   <div class="modal-overlay" @click.self="$emit('close')">

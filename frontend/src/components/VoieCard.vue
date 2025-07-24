@@ -1,3 +1,9 @@
+<!--
+  Ce composant affiche une carte de voie.
+  Il affiche le nom de la voie et le nom de la classe associée.
+  Il redirige vers la page de détails de la voie lorsqu'on clique sur la carte.
+-->
+
 <template>
   <!-- Carte cliquable représentant une voie -->
   <div class="voie-card" @click="goToVoie">

@@ -1,3 +1,13 @@
+<!--
+  Ce composant affiche la liste des voies.
+  Il affiche le titre, le contenu et les boutons d'annulation et de sauvegarde.
+  Il affiche les voies sous forme de liste.
+  Il permet d'ajouter une voie.
+  Il permet d'annuler l'ajout d'une voie.
+  Il permet d'éditer une voie.
+  Il permet de supprimer une voie.
+-->
+
 <template>
   <!-- Conteneur principal de la liste des voies -->
   <div>

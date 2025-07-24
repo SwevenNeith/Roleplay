@@ -1,3 +1,11 @@
+<!--
+  Ce composant affiche un formulaire de musique.
+  Il permet de créer ou de modifier une musique.
+  Il affiche le titre, l'artiste, le thème et le lien YouTube de la musique.
+  Il permet de sauvegarder la musique.
+  Il permet d'annuler les modifications.
+-->
+
 <template>
   <div class="musique-form">
     <form @submit.prevent="submitForm" class="form-container">

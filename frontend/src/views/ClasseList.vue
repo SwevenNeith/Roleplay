@@ -1,3 +1,10 @@
+<!--
+  Ce composant affiche la liste des classes.
+  Il permet d'ajouter une classe.
+  Il permet d'annuler l'ajout d'une classe.
+  Il affiche les classes sous forme de cards.
+-->
+
 <template>
   <!-- Conteneur principal de la liste des classes -->
   <div>

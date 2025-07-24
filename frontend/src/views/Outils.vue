@@ -1,3 +1,13 @@
+<!--
+  Ce composant affiche les outils disponibles.
+  Il affiche le titre, le contenu et les boutons d'annulation et de sauvegarde.
+  Il affiche les personnages sous forme de liste.
+  Il permet d'ajouter un personnage.
+  Il permet d'annuler l'ajout d'un personnage.
+  Il permet d'éditer un personnage.
+  Il permet de supprimer un personnage.
+-->
+
 <template>
   <div>
     <!-- Titre principal -->

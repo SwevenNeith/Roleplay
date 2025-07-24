@@ -1,3 +1,8 @@
+<!--
+  Ce composant affiche les données d'une origine spécifique.
+  Il affiche le nom, la description, les traits et les régions associées à l'origine.
+-->
+
 <template>
     <div>
       <h1>{{ origin.nom }}</h1>

@@ -1,3 +1,10 @@
+<!--
+  INUTILE POUR LE MOMENT ??
+  Ce composant affiche les données d'une classe spécifique.
+  Il récupère les données via l'API et les affiche sous forme de listes.
+  Il affiche les voies et les compétences associées à chaque voie.
+-->
+
 <template>
   <div v-if="classe">
     <h1>{{ classe.nom }}</h1>
