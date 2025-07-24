@@ -11,10 +11,13 @@
     <div class="header-section">
       <h1>Liste des compétences</h1>
       <div>
+        <!-- Bouton pour afficher/masquer le formulaire d'ajout -->
         <button class="btn-add" @click="showForm = !showForm">
           {{ showForm ? 'Annuler' : 'Ajouter une compétence' }}
         </button>
+        <!-- Bouton pour activer le mode suppression (affiche les cases à cocher) -->
         <button class="btn-delete" v-if="!modeSuppression" @click="modeSuppression = true">Supprimer</button>
+        <!-- Bouton pour quitter le mode suppression -->
         <button class="btn-cancel" v-if="modeSuppression" @click="cancelSuppression">Annuler</button>
       </div>
     </div>
@@ -27,9 +30,10 @@
       </label>
     </div>
 
-    <!-- Bouton suppression groupée -->
+    <!-- Barre de suppression groupée (visible seulement en mode suppression et si au moins une compétence est sélectionnée) -->
     <div v-if="modeSuppression && selectedSlugs.length" class="delete-bar">
       <span>{{ selectedSlugs.length }} sélectionnée(s)</span>
+      <!-- Bouton pour supprimer toutes les compétences sélectionnées -->
       <button class="btn-delete" @click="deleteSelected">Supprimer</button>
     </div>
 
@@ -42,6 +46,7 @@
     <!-- Grille de cards pour chaque compétence -->
     <div class="competence-cards-container">
       <div v-for="competence in filteredCompetences" :key="competence.slug" class="competence-card-wrapper">
+        <!-- Case à cocher pour la sélection (visible uniquement en mode suppression) -->
         <input v-if="modeSuppression" type="checkbox" class="select-checkbox" :value="competence.slug" v-model="selectedSlugs">
         <CompetenceCard
           :competence="competence"
@@ -66,8 +71,8 @@ export default {
       competences: [],
       showForm: false,
       selectedThemes: [],
-      selectedSlugs: [],
-      modeSuppression: false
+      selectedSlugs: [], // Liste des slugs sélectionnés pour suppression
+      modeSuppression: false // Contrôle l'affichage du mode suppression
     }
   },
   computed: {
@@ -91,8 +96,8 @@ export default {
         const response = await fetch('http://localhost:3000/api/competences');
         const data = await response.json();
         this.competences = Array.isArray(data) ? data.filter(c => c) : [];
-        this.selectedSlugs = [];
-        this.modeSuppression = false;
+        this.selectedSlugs = []; // Réinitialise la sélection après chaque chargement
+        this.modeSuppression = false; // Quitte le mode suppression après chaque chargement
       } catch (error) {
         console.error('Erreur lors de la récupération des compétences:', error);
       }
@@ -101,10 +106,12 @@ export default {
       this.showForm = false;
       this.fetchCompetences();
     },
+    // Annule le mode suppression et réinitialise la sélection
     cancelSuppression() {
       this.modeSuppression = false;
       this.selectedSlugs = [];
     },
+    // Supprime toutes les compétences sélectionnées (requête DELETE pour chaque slug)
     async deleteSelected() {
       if (!confirm('Voulez-vous vraiment supprimer les compétences sélectionnées ?')) return;
       for (const slug of this.selectedSlugs) {
