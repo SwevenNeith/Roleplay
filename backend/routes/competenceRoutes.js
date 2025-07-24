@@ -43,4 +43,23 @@ router.post('/competences', async (req, res) => {
   }
 });
 
+// Modifier une compétence existante
+router.put('/competences/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const updated = await Competence.findOneAndUpdate(
+      { slug },
+      req.body,
+      { new: true }
+    );
+    if (!updated) {
+      return res.status(404).json({ error: 'Compétence non trouvée' });
+    }
+    res.json({ message: 'Compétence modifiée avec succès', competence: updated });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Erreur lors de la modification de la compétence" });
+  }
+});
+
 module.exports = router;

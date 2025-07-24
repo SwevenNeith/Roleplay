@@ -10,7 +10,7 @@
   <!-- Formulaire d'ajout d'une nouvelle compétence -->
   <div class="competence-form">
     <div class="edit-form">
-      <h2>Ajouter une nouvelle compétence</h2>
+      <h2 v-if="initialData">Modifier la compétence</h2>
 
       <!-- Dropdown pour la classe -->
       <div class="form-group" v-if="!voieSlug">
@@ -111,7 +111,9 @@
 
       <!-- Boutons d'action du formulaire -->
       <div class="button-group">
-        <button class="btn-save" @click="saveCompetence">Ajouter la compétence</button>
+        <button class="btn-save" @click="saveCompetence">
+          {{ initialData ? 'Enregistrer les modifications' : 'Ajouter la compétence' }}
+        </button>
         <button class="btn-cancel" @click="$emit('cancel')">Annuler</button>
       </div>
     </div>
@@ -126,6 +128,11 @@ export default {
     voieSlug: {
       type: String,
       required: false // Le slug de la voie n'est plus obligatoire
+    },
+    initialData: {
+      type: Object,
+      required: false,
+      default: null
     }
   },
   // Données locales du formulaire
@@ -174,6 +181,24 @@ export default {
   created() {
     if (!this.voieSlug) {
       this.fetchClassesAndVoies();
+    }
+    // Pré-remplissage si édition
+    if (this.initialData) {
+      this.formData = {
+        ...this.initialData,
+        niveau: this.initialData.niveau || '',
+        theme: this.initialData.theme || []
+      };
+      // Pour l'input texte des thèmes
+      this.themeInput = (this.initialData.theme || []).join(', ');
+      // Pour la sélection de la classe (si possible)
+      if (this.initialData.voie_slug && !this.voieSlug) {
+        // On attend que les voies soient chargées pour setter la classe
+        this.fetchClassesAndVoies().then(() => {
+          const voie = this.voies.find(v => v.slug === this.initialData.voie_slug);
+          if (voie) this.selectedClasseSlug = voie.classe_slug;
+        });
+      }
     }
   },
   methods: {
@@ -224,26 +249,42 @@ export default {
           this.formData.theme = [];
         }
 
-        // Appel à l'API pour créer la nouvelle compétence
-        const response = await fetch('http://localhost:3000/api/competences', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(this.formData)
-        });
-
-        if (!response.ok) {
-          throw new Error('Erreur lors de la création de la compétence');
+        let response;
+        if (this.initialData && this.initialData.slug) {
+          // Édition : PUT
+          response = await fetch(`http://localhost:3000/api/competences/${this.initialData.slug}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.formData)
+          });
+        } else {
+          // Création : POST
+          response = await fetch('http://localhost:3000/api/competences', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(this.formData)
+          });
         }
 
-        // Émet un événement pour informer le parent que la compétence a été ajoutée
-        this.$emit('competence-added');
+        if (!response.ok) {
+          throw new Error(this.initialData ? 'Erreur lors de la modification de la compétence' : 'Erreur lors de la création de la compétence');
+        }
+
+        // Émet un événement pour informer le parent que la compétence a été ajoutée ou modifiée
+        if (this.initialData) {
+          this.$emit('competence-updated');
+        } else {
+          this.$emit('competence-added');
+        }
         // Réinitialise le formulaire
         this.resetForm();
       } catch (error) {
         console.error('Erreur:', error);
-        alert('Une erreur est survenue lors de la création de la compétence');
+        alert('Une erreur est survenue lors de la sauvegarde de la compétence');
       }
     },
     // Réinitialise tous les champs du formulaire
