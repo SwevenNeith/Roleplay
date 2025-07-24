@@ -20,7 +20,7 @@ export default {
   },
   methods: {
     goToObjet() {
-      this.$router.push(`/runeterra-objet/${this.objet.slug}`);
+      this.$router.push(`/runeterra-objets/${this.objet.slug}`);
     }
   }
 }

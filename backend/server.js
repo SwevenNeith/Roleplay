@@ -31,6 +31,7 @@ mongoose.connect('mongodb://localhost:27017/Runeterra', { useNewUrlParser: true,
 app.use('/api', classeRoutes);
 app.use('/api', voieRoutes);
 app.use('/api', competenceRoutes);
+app.use('/api', objetRoutes);
 app.use('/api', origineRoutes);
 app.use('/api', characterRoutes);
 app.use('/api', combatRoutes);
