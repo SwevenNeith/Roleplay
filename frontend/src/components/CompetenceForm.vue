@@ -77,6 +77,12 @@
         <textarea v-model="formData.description" rows="4"></textarea>
       </div>
 
+      <!-- Champ pour les prérequis de la compétence -->
+      <div class="form-group">
+        <label>Prérequis :</label>
+        <input v-model="formData.prerequis" type="text">
+      </div>
+
       <!-- Menu déroulant pour le niveau de la compétence (1 à 5) -->
       <div class="form-group">
         <label>Niveau :</label>

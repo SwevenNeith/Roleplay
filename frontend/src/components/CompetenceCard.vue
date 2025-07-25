@@ -17,6 +17,7 @@
       <p v-if="competence.systeme"><strong>Système :</strong> {{ competence.systeme }}</p>
       <p v-if="competence.systeme_value"><strong>Valeur du système :</strong> {{ competence.systeme_value }}</p>
       <p v-if="competence.voie_slug"><strong>Voie associée :</strong> {{ competence.voie_slug }}</p>
+      <p v-if="competence.prerequis"><strong>Prérequis :</strong> {{ competence.prerequis }}</p>
       <p v-if="competence.niveau"><strong>Niveau :</strong> {{ competence.niveau }}</p>
       <p v-if="competence.composant && competence.composant.length"><strong>Composant :</strong> {{ competence.composant.join(', ') }}</p>
       <p v-if="competence.portee"><strong>Portée :</strong> {{ competence.portee }}</p>

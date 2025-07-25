@@ -9,6 +9,7 @@ const competenceSchema = new mongoose.Schema({
   voie_slug: { type: String, required: false },
   // type: { type: String, enum: ['Attaque', 'Soin', 'Défense'], required: false },
   description: { type: String },
+  prerequis: { type: String },
   niveau: { type: Number },
   composant: { type: [String], default: [] }, // Liste des composants (Verbal, Matériel, Somatique)
   portee: { type: String },
