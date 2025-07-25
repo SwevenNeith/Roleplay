@@ -12,6 +12,32 @@
     <div class="edit-form">
       <h2 v-if="initialData">Modifier la compétence</h2>
 
+      <!-- Champ pour le nom de la compétence (obligatoire) -->
+      <div class="form-group">
+        <label>Nom de la compétence :</label>
+        <input v-model="formData.nom" type="text" required @input="generateSlug">
+      </div>
+
+      <!-- Champ pour le système utilisé pour la compétence -->
+      <div class="form-group">
+        <label>Système :</label>
+        <select v-model="formData.systeme">
+          <option value="">Sélectionner le système</option>
+          <option value="PM">PM</option>
+          <option value="Cooldown">Cooldown</option>
+          <option value="Action">Action</option>
+          <option value="PM + CD">PM + CD</option>
+          <option value="PM + Action">PM + Action</option>
+          <option value="CD + Action">CD + Action</option>
+        </select>
+      </div>
+
+      <!-- Champ pour la valeur du système de la compétence -->
+      <div class="form-group">
+        <label>Valeur du système :</label>
+        <input v-model="formData.systeme_value" type="text">
+      </div>
+
       <!-- Dropdown pour la classe -->
       <div class="form-group" v-if="!voieSlug">
         <label>Classe :</label>
@@ -34,14 +60,8 @@
         </select>
       </div>
 
-      <!-- Champ pour le nom de la compétence (obligatoire) -->
-      <div class="form-group">
-        <label>Nom de la compétence :</label>
-        <input v-model="formData.nom" type="text" required @input="generateSlug">
-      </div>
-
       <!-- Menu déroulant pour le type de compétence (Attaque, Soin, Défense) -->
-      <div class="form-group">
+      <!-- <div class="form-group">
         <label>Type de compétence :</label>
         <select v-model="formData.type">
           <option value="">Sélectionner un type</option>
@@ -49,7 +69,7 @@
           <option value="Soin">Soin</option>
           <option value="Défense">Défense</option>
         </select>
-      </div>
+      </div> -->
 
       <!-- Champ pour la description de la compétence -->
       <div class="form-group">
@@ -64,6 +84,40 @@
           <option value="">Sélectionner un niveau</option>
           <option v-for="n in 5" :key="n" :value="n">{{ n }}</option>
         </select>
+      </div>
+
+      <!-- Champ pour les composants de la compétence -->
+      <div class="form-group">
+        <label>Composant(s) :</label>
+        <div style="display: flex; gap: 10px;">
+          <label><input type="checkbox" value="Verbal" v-model="formData.composant"> Verbal</label>
+          <label><input type="checkbox" value="Matériel" v-model="formData.composant"> Matériel</label>
+          <label><input type="checkbox" value="Somatique" v-model="formData.composant"> Somatique</label>
+        </div>
+      </div>
+
+      <!-- Champ pour la portée de la compétence -->
+      <div class="form-group">
+        <label>Portée :</label>
+        <input v-model="formData.portee" type="text">
+      </div>
+
+      <!-- Champ pour la zone d'effet -->
+      <div class="form-group">
+        <label>Zone d'effet :</label>
+        <input v-model="formData.zone" type="text">
+      </div>
+
+      <!-- Champ pour la durée de l'incantation -->
+      <div class="form-group">
+        <label>Temps d'incantation :</label>
+        <input v-model="formData.temps_incantation" type="text">
+      </div>
+
+      <!-- Champ pour la durée de la compétence -->
+      <div class="form-group">
+        <label>Durée :</label>
+        <input v-model="formData.duree" type="text">
       </div>
 
       <!-- Champ pour les dégâts de la compétence -->
@@ -90,34 +144,11 @@
         <input v-model="formData.sauvegarde" type="text">
       </div>
 
-      <!-- Champ pour la portée de la compétence -->
-      <div class="form-group">
-        <label>Portée :</label>
-        <input v-model="formData.portee" type="text">
-      </div>
-
-      <!-- Champ pour la durée de la compétence -->
-      <div class="form-group">
-        <label>Durée :</label>
-        <input v-model="formData.duree" type="text">
-      </div>
-
       <!-- Champ pour les thèmes de la compétence -->
       <div class="form-group">
         <label>Thème(s) :</label>
         <input v-model="themeInput" type="text" placeholder="Ex : maitre de l'air, vent, feu">
         <small>Plusieurs thèmes séparés par une virgule.</small>
-      </div>
-
-      <!-- Champ pour les composants de la compétence -->
-      <div class="form-group">
-        <label>Composant(s) :</label>
-        <div style="display: flex; gap: 10px;">
-          <label><input type="checkbox" value="Verbal" v-model="formData.composant"> Verbal</label>
-          <label><input type="checkbox" value="Matériel" v-model="formData.composant"> Matériel</label>
-          <label><input type="checkbox" value="Somatique" v-model="formData.composant"> Somatique</label>
-        </div>
-        <small>Vous pouvez en sélectionner aucun, un, deux ou les trois.</small>
       </div>
 
       <!-- Boutons d'action du formulaire -->
