@@ -8,8 +8,8 @@
   <div class="competence-card" @click="goToCompetence" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
     <h2>{{ competence.nom }}</h2>
     <p v-if="competence.description">
-      {{ competence.description.substring(0, 80) }}
-      <span v-if="competence.description.length > 80">...</span>
+      {{ competence.description.substring(0, 25) }}
+      <span v-if="competence.description.length > 25">...</span>
     </p>
     <!-- Popover d'aperçu détaillé -->
     <div v-if="showDetails" class="competence-popover" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
