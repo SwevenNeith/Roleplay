@@ -1,3 +1,8 @@
+<!-- 
+  Ce composant est utilisé pour afficher une compétence dans la liste des compétences
+  Popover permettant d'afficher les détails de la compétence lorsque l'utilisateur survole la carte 
+-->
+
 <template>
   <!-- Carte cliquable représentant une compétence -->
   <div class="competence-card" @click="goToCompetence" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
@@ -10,6 +15,7 @@
     <div v-if="showDetails" class="competence-popover" @mouseenter="showDetails = true" @mouseleave="showDetails = false">
       <h3>{{ competence.nom }}</h3>
       <p v-if="competence.type"><strong>Type :</strong> {{ competence.type }}</p>
+      <p v-if="competence.composant && competence.composant.length"><strong>Composant :</strong> {{ competence.composant.join(', ') }}</p>
       <p v-if="competence.description"><strong>Description :</strong> {{ competence.description }}</p>
       <p v-if="competence.niveau"><strong>Niveau :</strong> {{ competence.niveau }}</p>
       <p v-if="competence.degats"><strong>Dégâts :</strong> {{ competence.degats }}</p>
