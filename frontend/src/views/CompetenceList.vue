@@ -77,14 +77,21 @@ export default {
   },
   computed: {
     allThemes() {
-      // Récupère tous les thèmes uniques présents dans les compétences
+      // Récupère tous les thèmes uniques présents dans les compétences et les trie par ordre alphabétique
       const set = new Set();
       this.competences.forEach(c => (c.theme || []).forEach(t => set.add(t)));
-      return Array.from(set);
+      return Array.from(set).sort((a, b) => a.localeCompare(b));
     },
     filteredCompetences() {
-      if (!this.selectedThemes.length) return this.competences;
-      return this.competences.filter(c => (c.theme || []).some(t => this.selectedThemes.includes(t)));
+      let competences = this.competences;
+      if (this.selectedThemes.length) {
+        competences = competences.filter(c => (c.theme || []).some(t => this.selectedThemes.includes(t)));
+      }
+      // Trie les compétences par nom (ou autre propriété pertinente) par ordre alphabétique
+      return competences.slice().sort((a, b) => {
+        if (!a.nom || !b.nom) return 0;
+        return a.nom.localeCompare(b.nom);
+      });
     }
   },
   created() {
