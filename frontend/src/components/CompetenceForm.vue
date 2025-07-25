@@ -109,6 +109,17 @@
         <small>Plusieurs thèmes séparés par une virgule.</small>
       </div>
 
+      <!-- Champ pour les composants de la compétence -->
+      <div class="form-group">
+        <label>Composant(s) :</label>
+        <div style="display: flex; gap: 10px;">
+          <label><input type="checkbox" value="Verbal" v-model="formData.composant"> Verbal</label>
+          <label><input type="checkbox" value="Matériel" v-model="formData.composant"> Matériel</label>
+          <label><input type="checkbox" value="Somatique" v-model="formData.composant"> Somatique</label>
+        </div>
+        <small>Vous pouvez en sélectionner aucun, un, deux ou les trois.</small>
+      </div>
+
       <!-- Boutons d'action du formulaire -->
       <div class="button-group">
         <button class="btn-save" @click="saveCompetence">
@@ -151,7 +162,8 @@ export default {
         sauvegarde: '', // Type de sauvegarde
         portee: '',     // Portée de la compétence
         duree: '',       // Durée des effets
-        theme: []
+        theme: [],
+        composant: []   // Composants sélectionnés
       },
       classes: [],
       voies: [],
@@ -187,7 +199,8 @@ export default {
       this.formData = {
         ...this.initialData,
         niveau: this.initialData.niveau || '',
-        theme: this.initialData.theme || []
+        theme: this.initialData.theme || [],
+        composant: this.initialData.composant || []
       };
       // Pour l'input texte des thèmes
       this.themeInput = (this.initialData.theme || []).join(', ');
@@ -302,7 +315,8 @@ export default {
         sauvegarde: '',
         portee: '',
         duree: '',
-        theme: []
+        theme: [],
+        composant: []
       };
       this.themeInput = '';
     }
