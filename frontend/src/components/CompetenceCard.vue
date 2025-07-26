@@ -25,8 +25,8 @@
       <p v-if="competence.temps_incantation"><strong>Temps d'incantation :</strong> {{ competence.temps_incantation }}</p>
       <p v-if="competence.duree"><strong>Durée :</strong> {{ competence.duree }}</p>
       <p v-if="competence.degats"><strong>Dégâts :</strong> {{ competence.degats }}</p>
-      <p v-if="competence.allie"><strong>Effets sur les alliés :</strong> {{ competence.allie }}</p>
-      <p v-if="competence.ennemi"><strong>Effets sur les ennemis :</strong> {{ competence.ennemi }}</p>
+      <p v-if="competence.allie"><strong>Effets sur les alliés :</strong> {{ competence.allie.substring(0, 30) }}<span v-if="competence.allie.length > 30">...</span></p>
+      <p v-if="competence.ennemi"><strong>Effets sur les ennemis :</strong> {{ competence.ennemi.substring(0, 30) }}<span v-if="competence.ennemi.length > 30">...</span></p>
       <p v-if="competence.sauvegarde"><strong>Sauvegarde :</strong> {{ competence.sauvegarde }}</p>
     </div>
   </div>
