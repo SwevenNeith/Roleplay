@@ -1,63 +1,432 @@
-# Explication des Modifications : Formulaire de Compétence (Système D&D)
+# Explication Complète : Formulaire de Compétence
 
-Ce document détaille les modifications apportées au projet pour supporter le système de compétences D&D, ainsi que le raisonnement derrière chaque choix technique.
+Ce document détaille l'implémentation complète du système de compétences avec support multi-systèmes (D&D et Chroniques Oubliées).
 
-## 1. Backend : Modèle de Données (`backend/models/Competence.js`)
+## Vue d'ensemble
 
-### Objectif
+Le formulaire de compétence permet de créer et modifier des compétences pour deux systèmes de jeu différents :
 
-Permettre le stockage des informations spécifiques à D&D sans casser la compatibilité avec les compétences existantes.
+- **D&D** : Formulaire structuré avec 6 sections détaillées
+- **Chroniques Oubliées** : Formulaire simplifié avec champs spécifiques
+- **Mixte** : Non implémenté (affiche un message d'erreur)
 
-### Modifications
+## Architecture
 
-- **Extension du Schéma Mongoose** : Nous avons ajouté de nombreux champs optionnels au schéma `competenceSchema`.
-  - _Pourquoi ?_ MongoDB est flexible (NoSQL). Ajouter des champs qui ne sont pas utilisés par toutes les compétences n'a pas d'impact négatif majeur et permet d'avoir un seul modèle unifié.
-- **Suppression de l'Enum pour `type_action`** :
-  - _Avant_ : `enum: ['Action', 'Action Bonus', ...]`
-  - _Après_ : `type: String` (plus de restriction stricte).
-  - _Raisonnement_ : Vous avez demandé la possibilité de saisir une valeur personnalisée ("Autre"). Une validation stricte par Enum côté base de données empêcherait de sauvegarder ces valeurs libres. La validation se fait désormais implicitement via l'interface utilisateur.
+### 1. Backend : Modèle de Données (`backend/models/Competence.js`)
 
-## 2. Frontend : Formulaire (`frontend/src/components/CompetenceForm.vue`)
+#### Champs Communs
 
-### A. Gestion de l'Affichage (Visibilité)
+Utilisés par tous les systèmes :
 
-- **Logique de "Système"** :
-  - Nous avons remplacé le menu déroulant unique par des **checkboxes mutuellement exclusives**.
-  - _Fonction `updateSystem(value)`_ : Cette fonction gère la logique "radio" (une seule sélection à la fois) mais permet aussi la **désélection** (cliquer sur l'option active la décoche), ce qui n'est pas possible avec des boutons radio standards.
-- **Affichage Conditionnel (`v-if`)** :
-  - Le formulaire est divisé en blocs.
-  - `v-if="formData.systeme === 'D&D'"` : Affiche le formulaire spécifique D&D.
-  - `v-if="['Chroniques Oubliées', 'Mixte'].includes(...)"` : Affiche un message d'attente.
-  - Les anciens champs sont masqués tant que le système n'est pas sélectionné ou s'il est différent de l'ancien système par défaut.
+```javascript
+nom: String (obligatoire)
+slug: String (unique, généré automatiquement)
+systeme: String (D&D, Chroniques Oubliées, Mixte)
+voie_slug: String (optionnel)
+type: String
+description: String
+niveau: Number (1-5)
+theme: [String]
+composant: [String]
+```
 
-### B. Structure du Formulaire D&D
+#### Champs Spécifiques D&D
 
-Le formulaire a été découpé en 6 sections distinctes (`.form-section`) pour la clarté, avec des styles CSS pour les distinguer visuellement (bordures, fond sombre).
+```javascript
+// Informations générales
+ecole_magie: String
+type_action: String (sans enum pour permettre "Autre")
 
-1.  **Champs "Autre" avec Précision** :
+// Coûts et activation
+condition_declenchement: String
+composante_materielle_details: String
+composante_materielle_consommee: Boolean
 
-    - Pour les dropdowns comme "Type" ou "Type d'action", nous avons ajouté une logique :
-      - Si la valeur sélectionnée est "Autre", un `<input>` texte s'affiche juste en dessous.
-      - _Dans le code (`data`)_ : Nous utilisons des variables temporaires `type_custom` et `type_action_custom` pour stocker la saisie de l'utilisateur sans polluer la valeur du dropdown tant qu'on n'a pas sauvegardé.
-      - _À la sauvegarde (`saveCompetence`)_ : Si "Autre" est sélectionné, on remplace la valeur envoyée au serveur par le contenu du champ custom.
-      - _Au chargement (`created`)_ : Si la valeur reçue du serveur ne fait pas partie de la liste standard, on sélectionne "Autre" dans le dropdown et on remplit le champ custom avec la valeur.
+// Portée & Cibles
+portee_type: String
+portee_distance: String
+zone_type: String
+zone_taille: String
+cible_type: String
+cible_nombre: Number
 
-2.  **Champs Conditionnels Imbriqués** :
-    - **Jet d'attaque / Modificateur** : Le dropdown "Modificateur" n'apparaît que si un "Jet d'attaque" est choisi.
-    - **Durée** : L'input pour préciser la durée (ex: "Nombre de rounds") n'apparaît que si le type de durée correspondant ("X rounds", "Concentration", "Fixe") est sélectionné.
-    - _Style_ : Ces inputs conditionnels sont placés dans des conteneurs `flex-column` pour qu'ils prennent toute la largeur disponible, assurant une uniformité visuelle.
+// Jets requis
+jet_attaque_type: String
+jet_attaque_modificateur: String
+sauvegarde_attribut: String
+sauvegarde_reussite: String
+sauvegarde_effet_reduit: String
+degre_difficulte: String
 
-### C. Styles CSS
+// Effets
+effet_principal: String
+degats_formule: String
+degats_type: String
+effets_secondaires: [String]
+effets_secondaires_repousse_distance: String
+effets_secondaires_autre: String
+duree_type: String
+duree_valeur: String
+concentration: Boolean
+dissipable: Boolean
+notes_lore: String
+```
 
-- **Uniformisation** : Tous les `input`, `select`, et `textarea` partagent le même style de base (padding, bordures, couleurs) pour une cohérence parfaite.
-- **Espacement** : Utilisation généreuse de `gap` dans les flexbox et de `margin-bottom` pour aérer le formulaire et le rendre plus lisible.
+#### Champs Spécifiques Chroniques Oubliées
 
-## Résumé pour reproduction future
+```javascript
+co_type_action: String
+co_type_action_autre: String (pour "Autre")
+co_conditions: String
+co_frequence: String
+co_frequence_valeur: String (pour "X fois/jour" et "Autre")
+co_jets: String
+co_portee: String
+co_duree: String
+```
 
-Si vous devez ajouter un nouveau système (ex: "Chroniques Oubliées") :
+#### Pourquoi `strict: false` ?
 
-1.  Ajoutez la valeur dans le modèle Backend si nécessaire (déjà fait pour CO).
-2.  Dans `CompetenceForm.vue`, créez une nouvelle `div` avec `v-if="formData.systeme === 'Chroniques Oubliées'"`.
-3.  Copiez la structure HTML d'une section existante (`.form-section`) pour garder le style.
-4.  Ajoutez les champs spécifiques dans `data()`.
-5.  Assurez-vous de les réinitialiser dans `resetForm()`.
+Le schéma Mongoose utilise `{ strict: false }` pour permettre une flexibilité future sans casser les données existantes.
+
+---
+
+### 2. Frontend : Formulaire (`frontend/src/components/CompetenceForm.vue`)
+
+## Logique de Visibilité
+
+### Sélection du Système
+
+- **Checkboxes mutuellement exclusives** : Implémentées comme des checkboxes mais avec comportement radio
+- **Fonction `updateSystem(value)`** :
+  - Si le système cliqué est déjà sélectionné → désélection
+  - Sinon → sélection du nouveau système
+  - Permet la désélection (impossible avec des radio buttons standards)
+
+### Affichage Conditionnel
+
+```vue
+<!-- Nom et Système : toujours visibles -->
+<input v-model="formData.nom">
+<div class="checkbox-group">
+  <!-- Checkboxes système -->
+</div>
+
+<!-- Formulaire D&D -->
+<div v-if="formData.systeme === 'D&D'" class="dnd-form">
+  <!-- 6 sections détaillées -->
+</div>
+
+<!-- Formulaire Chroniques Oubliées -->
+<div v-if="formData.systeme === 'Chroniques Oubliées'" class="co-form">
+  <!-- Champs structurés -->
+</div>
+
+<!-- Message pour Mixte -->
+<div v-if="formData.systeme === 'Mixte'" class="info-message">
+  <p>La création du formulaire de ce système est en cours...</p>
+</div>
+```
+
+---
+
+## Gestion des Champs "Autre"
+
+### Principe
+
+Certains dropdowns ont une option "Autre" qui affiche un champ de saisie libre.
+
+### Implémentation
+
+#### 1. Dans le Template
+
+```vue
+<select v-model="formData.type">
+  <option value="Sort">Sort</option>
+  <option value="Autre">Autre</option>
+</select>
+<input
+  v-if="formData.type === 'Autre'"
+  v-model="formData.type_custom"
+  placeholder="Préciser le type"
+>
+```
+
+#### 2. Dans `data()`
+
+```javascript
+formData: {
+  type: '',
+  type_custom: '', // Champ temporaire
+  // ...
+}
+```
+
+#### 3. Lors de la Sauvegarde (`saveCompetence`)
+
+```javascript
+// Si "Autre" est sélectionné, remplacer par la valeur custom
+if (dataToSend.type === "Autre") {
+  dataToSend.type = dataToSend.type_custom;
+}
+// Supprimer le champ temporaire
+delete dataToSend.type_custom;
+```
+
+#### 4. Lors du Chargement (`created`)
+
+```javascript
+// Si la valeur n'est pas dans la liste standard
+const standardTypes = ["Sort", "Action spéciale", ...];
+if (this.formData.type && !standardTypes.includes(this.formData.type)) {
+  this.formData.type_custom = this.formData.type;
+  this.formData.type = "Autre";
+}
+```
+
+**Champs concernés** :
+
+- D&D : `type`, `type_action`
+- CO : `co_type_action`
+
+---
+
+## Validation et Filtrage des Données
+
+### Validations (`saveCompetence`)
+
+#### 1. Validation du Nom
+
+```javascript
+if (!this.formData.nom) {
+  alert("Veuillez remplir le nom de la compétence.");
+  return;
+}
+```
+
+#### 2. Validation du Système
+
+```javascript
+if (!this.formData.systeme) {
+  alert("Veuillez sélectionner un système pour la compétence.");
+  return;
+}
+```
+
+#### 3. Blocage du Système Mixte
+
+```javascript
+if (this.formData.systeme === "Mixte") {
+  alert("Le système 'Mixte' n'est pas encore disponible...");
+  return;
+}
+```
+
+### Filtrage des Données
+
+#### 1. Suppression des Champs par Système
+
+```javascript
+const dndFields = ['ecole_magie', 'type_action', ...];
+const coFields = ['co_type_action', 'co_conditions', ...];
+
+if (dataToSend.systeme === 'D&D') {
+  // Supprimer tous les champs CO
+  coFields.forEach(field => delete dataToSend[field]);
+} else if (dataToSend.systeme === 'Chroniques Oubliées') {
+  // Supprimer tous les champs D&D
+  dndFields.forEach(field => delete dataToSend[field]);
+}
+```
+
+**Pourquoi ?** Pour éviter d'enregistrer des champs vides non pertinents dans la base de données.
+
+#### 2. Suppression des Valeurs Vides
+
+```javascript
+Object.keys(dataToSend).forEach((key) => {
+  const value = dataToSend[key];
+  if (
+    value === "" ||
+    value === null ||
+    value === undefined ||
+    (Array.isArray(value) && value.length === 0)
+  ) {
+    delete dataToSend[key];
+  }
+});
+```
+
+**Résultat** : Seuls les champs remplis sont envoyés à la base de données.
+
+---
+
+## Structure du Formulaire D&D
+
+### Partie 1 : Informations Générales
+
+- **Type** : Dropdown avec option "Autre" + input conditionnel
+- **Niveau** : 1-9
+- **École de magie** : Input avec datalist (suggestions)
+- **Tags** : Réutilise le champ `theme`
+
+### Partie 2 : Coûts et Activation
+
+- **Type d'action** : Dropdown avec "Autre" + input conditionnel
+- **Condition de déclenchement** : Affiché si "Réaction" sélectionnée
+- **Composantes** : Checkboxes (Verbal, Somatique, Matériel)
+  - Si Matériel : champs pour détails et case "Consommée ?"
+
+### Partie 3 : Portée & Cibles
+
+- **Portée** : Dropdown
+  - Si "Distance fixe" ou "Rayon" : input pour distance
+- **Zone d'effet** : Dropdown
+  - Si sélectionné : input pour taille
+- **Cible** : Dropdown
+  - Si "Plusieurs" : input pour nombre
+
+### Partie 4 : Jet requis
+
+- **Jet d'attaque** : Dropdown (Corps à Corps, À distance, Magique)
+  - Si sélectionné : dropdown Modificateur
+- **Test de Sauvegarde** : Dropdown (INT, SAG, FOR, DEX, CON, CHA)
+  - Si sélectionné : dropdown Résultat en cas de réussite
+    - Si "Effet réduit" : input pour préciser
+- **Degré de Difficulté** : Input libre
+
+### Partie 5 : Effets
+
+- **Effet principal** : Textarea
+- **Dégâts** : Formule + Type
+- **Effets secondaires** : Checkboxes inline
+  - Inputs conditionnels en dessous (Distance de repoussement, Autre)
+- **Durée** : Dropdown
+  - Inputs conditionnels selon sélection (X rounds, Concentration, Fixe)
+- **Peut être dissipé ?** : Radio Oui/Non
+
+### Partie 6 : Notes & Lore
+
+- **Description narrative** : Textarea
+
+---
+
+## Structure du Formulaire Chroniques Oubliées
+
+### Champs
+
+1. **Rang** : Dropdown 1-5 (stocké dans `niveau`)
+2. **Effet exact** : Textarea (stocké dans `description`)
+3. **Type d'action** : Dropdown avec "Autre" + input conditionnel
+4. **Conditions d'usage** : Textarea
+5. **Fréquence** : Dropdown avec inputs conditionnels pour "X fois/jour" et "Autre"
+6. **Jets nécessaires** : Textarea
+7. **Portée** : Input
+8. **Durée** : Input
+
+---
+
+## Styles CSS
+
+### Classes Principales
+
+- `.dnd-form`, `.co-form` : Conteneurs flex avec gap de 20px
+- `.form-section` : Sections avec fond sombre, bordure, padding
+- `.form-group` : Groupes de champs avec gap et margin-bottom
+- `.info-message` : Message centré avec style italique
+
+### Espacement
+
+- Gap entre sections : 20px
+- Gap dans form-group : 12px
+- Margin-bottom form-group : 15px
+- Padding form-section : 20px
+
+---
+
+## Reproduction pour un Nouveau Système
+
+Pour ajouter un nouveau système (ex: "Pathfinder") :
+
+### 1. Backend
+
+```javascript
+// Dans Competence.js
+systeme: {
+  type: String,
+  enum: [..., 'Pathfinder']
+}
+
+// Ajouter les champs spécifiques
+pf_field1: { type: String },
+pf_field2: { type: Number },
+// ...
+```
+
+### 2. Frontend - Template
+
+```vue
+<div v-if="formData.systeme === 'Pathfinder'" class="pf-form">
+  <div class="form-section">
+    <h3>Section 1</h3>
+    <div class="form-group">
+      <label>Champ 1 :</label>
+      <input v-model="formData.pf_field1">
+    </div>
+  </div>
+</div>
+```
+
+### 3. Frontend - Data
+
+```javascript
+data() {
+  return {
+    formData: {
+      // ... champs existants
+      pf_field1: '',
+      pf_field2: '',
+    }
+  }
+}
+```
+
+### 4. Frontend - ResetForm
+
+```javascript
+resetForm() {
+  this.formData = {
+    // ... champs existants
+    pf_field1: '',
+    pf_field2: '',
+  };
+}
+```
+
+### 5. Frontend - SaveCompetence
+
+```javascript
+const pfFields = ["pf_field1", "pf_field2"];
+
+if (dataToSend.systeme === "D&D") {
+  coFields.forEach((field) => delete dataToSend[field]);
+  pfFields.forEach((field) => delete dataToSend[field]);
+} else if (dataToSend.systeme === "Chroniques Oubliées") {
+  dndFields.forEach((field) => delete dataToSend[field]);
+  pfFields.forEach((field) => delete dataToSend[field]);
+} else if (dataToSend.systeme === "Pathfinder") {
+  dndFields.forEach((field) => delete dataToSend[field]);
+  coFields.forEach((field) => delete dataToSend[field]);
+}
+```
+
+---
+
+## Points Clés à Retenir
+
+1. **Flexibilité** : Le système supporte facilement l'ajout de nouveaux systèmes de jeu
+2. **Propreté des données** : Seuls les champs pertinents et remplis sont sauvegardés
+3. **Validation** : Empêche la création de compétences incomplètes ou invalides
+4. **Réutilisation** : Les champs communs (`nom`, `niveau`, `description`) sont partagés
+5. **UX** : Affichage conditionnel pour ne montrer que les champs pertinents
+6. **Extensibilité** : Architecture prête pour "Autre" personnalisé sur n'importe quel dropdown
