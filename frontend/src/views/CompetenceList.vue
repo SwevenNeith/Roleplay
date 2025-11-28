@@ -10,13 +10,13 @@
   <div>
     <div class="header-section">
       <h1>Liste des compétences</h1>
-      <div>
+      <div class="action-buttons">
         <!-- Bouton pour afficher/masquer le formulaire d'ajout -->
         <button class="btn-add" @click="showForm = !showForm">
           {{ showForm ? 'Annuler' : 'Ajouter une compétence' }}
         </button>
         <!-- Bouton pour activer le mode suppression (affiche les cases à cocher) -->
-        <button class="btn-delete" v-if="!modeSuppression" @click="modeSuppression = true">Supprimer</button>
+        <button class="btn-delete" v-if="!modeSuppression" @click="modeSuppression = true" :disabled="competences.length === 0">Supprimer</button>
         <!-- Bouton pour quitter le mode suppression -->
         <button class="btn-cancel" v-if="modeSuppression" @click="cancelSuppression">Annuler</button>
       </div>
@@ -138,6 +138,11 @@ export default {
   margin-bottom: 24px;
 }
 
+.action-buttons {
+  display: flex;
+  gap: 10px;
+}
+
 .theme-filters {
   display: flex;
   flex-wrap: wrap;
@@ -221,6 +226,14 @@ h1 {
 }
 .btn-delete:hover {
   background: #8f4040;
+}
+.btn-delete:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.65;
+}
+.btn-delete:disabled:hover {
+  background: #6c757d;
 }
 .btn-cancel {
   background: #4a4a4a;
