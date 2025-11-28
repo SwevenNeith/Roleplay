@@ -52,6 +52,16 @@ const competenceSchema = new mongoose.Schema({
   concentration: { type: Boolean },
   dissipable: { type: Boolean },
   notes_lore: { type: String },
+
+  // Champs spécifiques Chroniques Oubliées
+  co_type_action: { type: String },
+  co_type_action_autre: { type: String },
+  co_conditions: { type: String },
+  co_frequence: { type: String },
+  co_frequence_valeur: { type: String },
+  co_jets: { type: String },
+  co_portee: { type: String },
+  co_duree: { type: String },
 }, { strict: false }); // strict: false permet d'accepter d'autres champs si besoin
 
 // Exporte le modèle 'Competence' pour l'utiliser dans les routes

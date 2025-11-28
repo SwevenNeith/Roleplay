@@ -57,8 +57,114 @@
 
 
 
-      <!-- Message pour les systèmes en cours de développement -->
-      <div v-if="['Chroniques Oubliées', 'Mixte'].includes(formData.systeme)" class="info-message">
+      <!-- Formulaire Chroniques Oubliées -->
+      <div v-if="formData.systeme === 'Chroniques Oubliées'" class="co-form">
+        <div class="form-section">
+          <h3>Détails de la Compétence</h3>
+          
+          <!-- Rang (Niveau) -->
+          <div class="form-group">
+            <label>Rang :</label>
+            <select v-model="formData.niveau">
+              <option value="">Sélectionner un rang</option>
+              <option v-for="n in 5" :key="n" :value="n">Rang {{ n }}</option>
+            </select>
+          </div>
+
+          <!-- Effet exact -->
+          <div class="form-group">
+            <label>Effet exact :</label>
+            <textarea 
+              v-model="formData.description" 
+              rows="6" 
+              placeholder="Description complète de l'effet (bonus, dégâts, capacités spéciales...)"
+            ></textarea>
+          </div>
+
+          <!-- Type d'action -->
+          <div class="form-group">
+            <label>Type d'action :</label>
+            <select v-model="formData.co_type_action">
+              <option value="">Sélectionner</option>
+              <option value="Action">Action</option>
+              <option value="Action limitée">Action limitée</option>
+              <option value="Réaction">Réaction</option>
+              <option value="Automatique">Automatique</option>
+              <option value="Autre">Autre</option>
+            </select>
+            <input 
+              v-if="formData.co_type_action === 'Autre'" 
+              v-model="formData.co_type_action_autre" 
+              type="text" 
+              placeholder="Préciser le type d'action" 
+              style="margin-top: 10px;"
+            >
+          </div>
+
+          <!-- Conditions d'usage -->
+          <div class="form-group">
+            <label>Conditions d'usage :</label>
+            <textarea 
+              v-model="formData.co_conditions" 
+              rows="3" 
+              placeholder="Cible visible, arme requise, situation particulière..."
+            ></textarea>
+          </div>
+
+          <!-- Fréquence -->
+          <div class="form-group">
+            <label>Fréquence :</label>
+            <select v-model="formData.co_frequence">
+              <option value="">Sélectionner</option>
+              <option value="Illimité">Illimité</option>
+              <option value="1/combat">1/combat</option>
+              <option value="1/repos long">1/repos long</option>
+              <option value="X fois/jour">X fois/jour</option>
+              <option value="Autre">Autre</option>
+            </select>
+            <input 
+              v-if="['X fois/jour', 'Autre'].includes(formData.co_frequence)" 
+              v-model="formData.co_frequence_valeur" 
+              type="text" 
+              placeholder="Préciser la fréquence" 
+              style="margin-top: 10px;"
+            >
+          </div>
+
+          <!-- Jets nécessaires -->
+          <div class="form-group">
+            <label>Jets nécessaires :</label>
+            <textarea 
+              v-model="formData.co_jets" 
+              rows="3" 
+              placeholder="Attaque, sauvegarde, test de caractéristique..."
+            ></textarea>
+          </div>
+
+          <!-- Portée -->
+          <div class="form-group">
+            <label>Portée :</label>
+            <input 
+              v-model="formData.co_portee" 
+              type="text" 
+              placeholder="Ex: Contact, 10m, Ligne de vue..."
+            >
+          </div>
+
+          <!-- Durée -->
+          <div class="form-group">
+            <label>Durée :</label>
+            <input 
+              v-model="formData.co_duree" 
+              type="text" 
+              placeholder="Ex: Instantané, 1 round, Concentration..."
+            >
+          </div>
+        </div>
+      </div>
+
+      <!-- Message pour les systèmes en cours de développement (Mixte uniquement maintenant) -->
+      <div v-if="formData.systeme === 'Mixte'" class="info-message">
         <p>La création du formulaire de ce système est en cours...</p>
       </div>
 
@@ -509,7 +615,17 @@ export default {
         dissipable: false,
         notes_lore: '',
         type_custom: '', // Champ temporaire pour l'input "Autre" du type
-        type_action_custom: '' // Champ temporaire pour l'input "Autre" du type d'action
+        type_action_custom: '', // Champ temporaire pour l'input "Autre" du type d'action
+
+        // Champs Chroniques Oubliées
+        co_type_action: '',
+        co_type_action_autre: '',
+        co_conditions: '',
+        co_frequence: '',
+        co_frequence_valeur: '',
+        co_jets: '',
+        co_portee: '',
+        co_duree: ''
       },
       classes: [],
       voies: [],
@@ -748,7 +864,17 @@ export default {
         dissipable: false,
         notes_lore: '',
         type_custom: '',
-        type_action_custom: ''
+        type_action_custom: '',
+
+        // Champs Chroniques Oubliées
+        co_type_action: '',
+        co_type_action_autre: '',
+        co_conditions: '',
+        co_frequence: '',
+        co_frequence_valeur: '',
+        co_jets: '',
+        co_portee: '',
+        co_duree: ''
       };
       this.themeInput = "";
     },
@@ -885,7 +1011,8 @@ textarea {
 }
 
 /* Styles pour le formulaire D&D */
-.dnd-form {
+.dnd-form,
+.co-form {
   display: flex;
   flex-direction: column;
   gap: 20px;
