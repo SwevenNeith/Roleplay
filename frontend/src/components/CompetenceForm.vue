@@ -569,19 +569,9 @@ export default {
         slug: "", // Slug généré automatiquement
         voie_slug: "", // Slug de la voie associée
         systeme: "", // Système (D&D, Chroniques Oubliées, Mixte)
-        systeme_value: "", // Valeur du système
-        type: "", // Type de compétence (Attaque, Soin, Défense)
+        type: "", // Type de compétence
         description: "", // Description de la compétence
         niveau: "", // Niveau de la compétence (1-5)
-        degats: "", // Dégâts infligés
-        allie: "", // Effets sur les alliés
-        ennemi: "", // Effets sur les ennemis
-        sauvegarde: "", // Type de sauvegarde
-        portee: "", // Portée de la compétence
-        duree: "", // Durée des effets
-        temps_incantation: "",
-        zone: "",
-        prerequis: "",
         theme: [],
         composant: [], // Composants sélectionnés
         
@@ -726,11 +716,22 @@ export default {
     // Voir Explication/Explication_Formulaire_Competence.md pour la gestion des champs "Autre"
     async saveCompetence() {
       try {
-        // Validation : seul le nom est obligatoire
+        // Validation : nom et système obligatoires
         if (!this.formData.nom) {
           alert("Veuillez remplir le nom de la compétence.");
           return;
         }
+        
+        if (!this.formData.systeme) {
+          alert("Veuillez sélectionner un système pour la compétence.");
+          return;
+        }
+        
+        if (this.formData.systeme === 'Mixte') {
+          alert("Le système 'Mixte' n'est pas encore disponible. Veuillez choisir 'D&D' ou 'Chroniques Oubliées'.");
+          return;
+        }
+        
         // Ajoute le slug de la voie aux données seulement si défini
         if (this.voieSlug) {
           this.formData.voie_slug = this.voieSlug;
@@ -765,6 +766,41 @@ export default {
         // Suppression des champs temporaires
         delete dataToSend.type_custom;
         delete dataToSend.type_action_custom;
+
+        // Filtrage des données selon le système sélectionné
+        const dndFields = [
+          'ecole_magie', 'type_action', 'condition_declenchement',
+          'composante_materielle_details', 'composante_materielle_consommee',
+          'portee_type', 'portee_distance', 'zone_type', 'zone_taille',
+          'cible_type', 'cible_nombre', 'jet_attaque_type', 'jet_attaque_modificateur',
+          'sauvegarde_attribut', 'sauvegarde_reussite', 'sauvegarde_effet_reduit',
+          'degre_difficulte', 'effet_principal', 'degats_formule', 'degats_type',
+          'effets_secondaires', 'effets_secondaires_repousse_distance', 'effets_secondaires_autre',
+          'duree_type', 'duree_valeur', 'concentration', 'dissipable', 'notes_lore'
+        ];
+
+        const coFields = [
+          'co_type_action', 'co_type_action_autre', 'co_conditions',
+          'co_frequence', 'co_frequence_valeur', 'co_jets', 'co_portee', 'co_duree'
+        ];
+
+        if (dataToSend.systeme === 'D&D') {
+          // Supprimer les champs CO
+          coFields.forEach(field => delete dataToSend[field]);
+        } else if (dataToSend.systeme === 'Chroniques Oubliées') {
+          // Supprimer les champs D&D
+          dndFields.forEach(field => delete dataToSend[field]);
+        }
+
+        // Filtrer les champs vides pour ne pas les envoyer à la base de données
+        Object.keys(dataToSend).forEach(key => {
+          const value = dataToSend[key];
+          // Supprimer si vide (chaîne vide, tableau vide, null, undefined)
+          if (value === '' || value === null || value === undefined || 
+              (Array.isArray(value) && value.length === 0)) {
+            delete dataToSend[key];
+          }
+        });
 
         let response;
         if (this.initialData && this.initialData.slug) {
@@ -818,19 +854,9 @@ export default {
         slug: "",
         voie_slug: "",
         systeme: "",
-        systeme_value: "",
         type: "",
         description: "",
         niveau: "",
-        degats: "",
-        allie: "",
-        ennemi: "",
-        sauvegarde: "",
-        portee: "",
-        duree: "",
-        temps_incantation: "",
-        zone: "",
-        prerequis: "",
         theme: [],
         composant: [],
         
