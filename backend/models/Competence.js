@@ -23,6 +23,7 @@ const competenceSchema = new mongoose.Schema({
   theme: { type: [String], default: [] }, // Liste de thèmes
 
   // Champs spécifiques D&D
+  // Voir Explication/Explication_Formulaire_Competence.md pour les détails
   ecole_magie: { type: String },
   type_action: { type: String }, // Enum retiré pour permettre "Autre" personnalisé
   condition_declenchement: { type: String },

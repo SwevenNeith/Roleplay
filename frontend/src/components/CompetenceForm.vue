@@ -539,6 +539,7 @@ export default {
     },
   },
   created() {
+    // Voir Explication/Explication_Formulaire_Competence.md pour les détails sur la logique de chargement
     if (!this.voieSlug) {
       this.fetchClassesAndVoies();
     }
@@ -606,6 +607,7 @@ export default {
       }
     },
     // Envoie les données du formulaire au serveur
+    // Voir Explication/Explication_Formulaire_Competence.md pour la gestion des champs "Autre"
     async saveCompetence() {
       try {
         // Validation : seul le nom est obligatoire
@@ -751,6 +753,7 @@ export default {
       this.themeInput = "";
     },
     // Met à jour le système sélectionné (comportement radio avec désélection)
+    // Voir Explication/Explication_Formulaire_Competence.md pour la logique de visibilité
     updateSystem(value) {
       if (this.formData.systeme === value) {
         this.formData.systeme = ''; // Désélectionne si on clique sur le système déjà actif
