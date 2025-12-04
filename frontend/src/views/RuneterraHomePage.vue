@@ -96,7 +96,6 @@ export default {
           return response.json();
         })
         .then((data) => {
-          alert(`Origine "${data.nom}" créée avec succès !`);
           this.showAddOriginForm = false;
           this.newOriginName = '';
           // Rediriger vers la page de l'origine pour compléter les informations

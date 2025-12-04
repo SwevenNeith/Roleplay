@@ -204,7 +204,6 @@
             // Mettre à jour l'affichage avec les nouvelles données
             this.origin = data;
             this.showForm = false; // Masquer le formulaire
-            alert('Informations mises à jour avec succès !');
           })
           .catch((error) => {
             console.error("Erreur:", error);
@@ -306,4 +305,15 @@
   .submit-btn:hover {
     background-color: #007399;
   }
-  </style>.form-group-inline { display: flex; gap: 15px; margin-bottom: 15px; } .form-group-inline .form-group { flex: 1; margin-bottom: 0; }
+
+  .form-group-inline {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .form-group-inline .form-group {
+    flex: 1;
+    margin-bottom: 0;
+  }
+  </style>
