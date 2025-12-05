@@ -34,17 +34,31 @@ router.get('/origins/:slug', async (req, res) => {
 router.put('/origins/:slug', async (req, res) => {
   try {
     const { slug } = req.params;
-    const { description, traits, regions_associees, position_x, position_y } = req.body;
+    const { 
+      nom, // Ajout de la possibilité de modifier le nom
+      position_x, 
+      position_y,
+      themes_majeurs,
+      geographie,
+      histoire,
+      factions,
+      champions,
+      evenements
+    } = req.body;
 
     // Recherche et mise à jour de l'origine
     const origin = await Origin.findOneAndUpdate(
       { slug },
       { 
-        description, 
-        traits, 
-        regions_associees,
+        nom, // Ajout de la possibilité de modifier le nom
         position_x,
-        position_y
+        position_y,
+        themes_majeurs,
+        geographie,
+        histoire,
+        factions,
+        champions,
+        evenements
       },
       { new: true, runValidators: true } // Retourne le document mis à jour et valide les données
     );
@@ -63,7 +77,18 @@ router.put('/origins/:slug', async (req, res) => {
 // Route pour créer une nouvelle origine
 router.post('/origins', async (req, res) => {
   try {
-    const { slug, nom, description, traits, regions_associees, position_x, position_y } = req.body;
+    const { 
+      slug, 
+      nom, 
+      position_x, 
+      position_y,
+      themes_majeurs,
+      geographie,
+      histoire,
+      factions,
+      champions,
+      evenements
+    } = req.body;
 
     // Vérifier si une origine avec ce slug existe déjà
     const existingOrigin = await Origin.findOne({ slug });
@@ -75,11 +100,14 @@ router.post('/origins', async (req, res) => {
     const newOrigin = new Origin({
       slug,
       nom,
-      description,
-      traits,
-      regions_associees,
       position_x,
-      position_y
+      position_y,
+      themes_majeurs,
+      geographie,
+      histoire,
+      factions,
+      champions,
+      evenements
     });
 
     // Sauvegarder dans la base de données

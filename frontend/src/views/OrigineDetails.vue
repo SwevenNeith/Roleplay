@@ -1,100 +1,102 @@
 <!--
   Ce composant affiche les détails d'une origine spécifique.
-  Il affiche le nom, la description, les traits et les régions associées à l'origine.
+  Il permet de modifier les informations via un éditeur de texte riche (Quill).
 -->
 
 <template>
     <div class="origine-details-container">
-      <!-- Message si l'origine n'existe pas encore -->
-      <div v-if="!origin && !loading" class="no-origin-message">
-        <h2>Cette origine n'existe pas encore dans la base de données</h2>
-        <p>Slug : <strong>{{ slug }}</strong></p>
-        <p>Cliquez sur le bouton ci-dessous pour ajouter des informations.</p>
+      
+      <!-- En-tête avec Titre et Bouton Modifier (Positionné comme demandé) -->
+      <div class="header-section">
+        <h1>{{ origin ? origin.nom : 'Détails de l\'origine' }}</h1>
+        <div class="action-buttons" v-if="!loading">
+          <button class="btn-edit" @click="toggleForm">
+            {{ showForm ? 'Annuler' : (origin ? 'Modifier les informations' : 'Ajouter des informations') }}
+          </button>
+        </div>
       </div>
 
-      <!-- Affichage des détails de l'origine via le composant OrigineTemplate -->
-      <OrigineTemplate :origin="origin" v-if="origin" />
+      <!-- Message si l'origine n'existe pas encore -->
+      <div v-if="!origin && !loading && !showForm" class="no-origin-message">
+        <h2>Cette origine n'existe pas encore dans la base de données</h2>
+        <p>Slug : <strong>{{ slug }}</strong></p>
+        <p>Cliquez sur "Ajouter des informations" en haut à droite pour commencer.</p>
+      </div>
+
+      <!-- Affichage des détails (Mode Lecture) -->
+      <div v-if="!showForm && origin">
+         <OrigineTemplate :origin="origin" />
+      </div>
       
-      <!-- Bouton pour afficher le formulaire (visible même si origin n'existe pas) -->
-      <button @click="showForm = !showForm" class="add-info-btn" v-if="!loading">
-        {{ showForm ? 'Annuler' : 'Ajouter des informations' }}
-      </button>
-      
-      <!-- Formulaire pour ajouter des informations -->
+      <!-- Formulaire d'édition (Mode Édition) -->
       <div v-if="showForm" class="form-container">
-        <h2>{{ origin ? 'Modifier les informations' : 'Créer une nouvelle origine' }}</h2>
+        <h2>{{ origin ? 'Modifier l\'origine' : 'Créer l\'origine' }}</h2>
         <form @submit.prevent="submitForm">
-          <div class="form-group" v-if="!origin">
-            <label for="nom">Nom :</label>
+          
+          <!-- Champ Nom -->
+          <div class="form-group">
+            <label for="nom">Nom de la région / Origine :</label>
             <input 
               type="text" 
               id="nom" 
               v-model="formData.nom" 
-              placeholder="Entrez le nom de l'origine..."
+              placeholder="Ex: Bilgewater"
               required
             />
+          </div>
+          
+          <hr />
+          <h3>Contenu Détaillé</h3>
+          <p class="info-text">Utilisez les outils de mise en forme (Gras, Italique, Souligné, Couleurs) pour enrichir le contenu.</p>
+
+          <!-- Nouveaux Champs Texte Riche -->
+          
+          <div class="form-group">
+            <label>Thèmes majeurs :</label>
+            <QuillEditor theme="snow" v-model:content="formData.themes_majeurs" contentType="html" :toolbar="toolbarOptions" />
           </div>
 
           <div class="form-group">
-            <label for="description">Description :</label>
-            <textarea 
-              id="description" 
-              v-model="formData.description" 
-              rows="5"
-              placeholder="Entrez la description..."
-              required
-            ></textarea>
+            <label>Géographie et lieux importants :</label>
+            <QuillEditor theme="snow" v-model:content="formData.geographie" contentType="html" :toolbar="toolbarOptions" />
           </div>
-          
+
           <div class="form-group">
-            <label for="traits">Traits :</label>
-            <input 
-              type="text" 
-              id="traits" 
-              v-model="formData.traits" 
-              placeholder="Entrez les traits séparés par des virgules..."
-            />
+            <label>Histoire résumée :</label>
+            <QuillEditor theme="snow" v-model:content="formData.histoire" contentType="html" :toolbar="toolbarOptions" />
           </div>
-          
+
           <div class="form-group">
-            <label for="regions">Régions associées :</label>
-            <input 
-              type="text" 
-              id="regions" 
-              v-model="formData.regions_associees" 
-              placeholder="Entrez les régions séparées par des virgules..."
-            />
+            <label>Factions / Organisations :</label>
+            <QuillEditor theme="snow" v-model:content="formData.factions" contentType="html" :toolbar="toolbarOptions" />
+          </div>
+
+          <div class="form-group">
+            <label>Champions associés :</label>
+            <QuillEditor theme="snow" v-model:content="formData.champions" contentType="html" :toolbar="toolbarOptions" />
+          </div>
+
+          <div class="form-group">
+            <label>Evènements majeurs :</label>
+            <QuillEditor theme="snow" v-model:content="formData.evenements" contentType="html" :toolbar="toolbarOptions" />
           </div>
           
-          <div class="form-group-inline">
+           <!-- Position sur la carte (Déplacé à la fin) -->
+           <div class="form-group-inline">
             <div class="form-group">
-              <label for="position_x">Position X (% de gauche à droite) :</label>
-              <input 
-                type="number" 
-                id="position_x" 
-                v-model.number="formData.position_x" 
-                placeholder="0-100 (ex: 0=gauche, 50=centre, 100=droite)"
-                min="0"
-                max="100"
-                step="0.1"
-              />
+              <label>Position X (%) :</label>
+              <input type="number" v-model.number="formData.position_x" min="0" max="100" step="0.1">
             </div>
-            
             <div class="form-group">
-              <label for="position_y">Position Y (% de haut en bas) :</label>
-              <input 
-                type="number" 
-                id="position_y" 
-                v-model.number="formData.position_y" 
-                placeholder="0-100 (ex: 0=haut, 50=centre, 100=bas)"
-                min="0"
-                max="100"
-                step="0.1"
-              />
+              <label>Position Y (%) :</label>
+              <input type="number" v-model.number="formData.position_y" min="0" max="100" step="0.1">
             </div>
           </div>
-          
-          <button type="submit" class="submit-btn">Valider</button>
+
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" @click="toggleForm">Annuler</button>
+            <button type="submit" class="submit-btn">Sauvegarder</button>
+          </div>
         </form>
       </div>
     </div>
@@ -102,25 +104,39 @@
   
   <script>
   import OrigineTemplate from "../components/OrigineTemplate.vue";
+  import { QuillEditor } from '@vueup/vue-quill';
+  import '@vueup/vue-quill/dist/vue-quill.snow.css';
   
   export default {
-    name: "OrigineDetails", // Nom du composant
+    name: "OrigineDetails",
     components: {
-      OrigineTemplate, // Importation du composant OrigineTemplate
+      OrigineTemplate,
+      QuillEditor
     },
     data() {
       return {
-        origin: null, // L'origine sélectionnée
-        loading: true, // État de chargement
-        slug: '', // Slug de l'origine
-        showForm: false, // Affichage du formulaire
+        origin: null,
+        loading: true,
+        slug: '',
+        showForm: false,
+        // Options de la barre d'outils Quill
+        toolbarOptions: [
+            ['bold', 'italic', 'underline', 'strike'],        // toggled buttons
+            [{ 'color': [] }, { 'background': [] }],          // dropdown with defaults from theme
+            [{ 'header': [1, 2, 3, false] }],
+            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+            ['clean']                                         // remove formatting button
+        ],
         formData: {
           nom: '',
-          description: '',
-          traits: '',
-          regions_associees: '',
-          position_x: 50,
-          position_y: 50
+          position_x: 5,
+          position_y: 5,
+          themes_majeurs: '',
+          geographie: '',
+          histoire: '',
+          factions: '',
+          champions: '',
+          evenements: ''
         }
       };
     },
@@ -128,36 +144,49 @@
       this.loadOrigin();
     },
     methods: {
+      toggleForm() {
+          this.showForm = !this.showForm;
+          // Si on ouvre le formulaire, on recharge les données actuelles dans formData pour être sûr
+          if (this.showForm && this.origin) {
+              this.populateFormData(this.origin);
+          }
+      },
+      populateFormData(data) {
+        this.formData.nom = data.nom || '';
+        this.formData.position_x = data.position_x !== undefined ? data.position_x : 5;
+        this.formData.position_y = data.position_y !== undefined ? data.position_y : 5;
+        
+        // Nouveaux champs riches
+        this.formData.themes_majeurs = data.themes_majeurs || '';
+        this.formData.geographie = data.geographie || '';
+        this.formData.histoire = data.histoire || '';
+        this.formData.factions = data.factions || '';
+        this.formData.champions = data.champions || '';
+        this.formData.evenements = data.evenements || '';
+      },
       loadOrigin() {
-        // Récupère le slug de l'origine depuis l'URL
         const slug = this.$route.params.slug;
         this.slug = slug;
         this.loading = true;
     
-        // Appel à l'API pour récupérer les données de l'origine en fonction du slug
         fetch(`http://localhost:3000/api/origins/${slug}`)
           .then((response) => {
             if (!response.ok) {
               if (response.status === 404) {
-                // L'origine n'existe pas encore, ce n'est pas une erreur
                 this.origin = null;
                 this.loading = false;
+                // Si pas d'origine, on prépare le form avec les valeurs par défaut
+                this.showForm = true; 
                 return null;
               }
-              throw new Error("Erreur lors de la récupération des détails de l'origine");
+              throw new Error("Erreur lors de la récupération");
             }
             return response.json();
           })
           .then((data) => {
             if (data) {
-              this.origin = data; // Stocke les données de l'origine récupérées
-              // Pré-remplir le formulaire avec les données existantes
-              this.formData.nom = data.nom || '';
-              this.formData.description = data.description || '';
-              this.formData.traits = data.traits ? data.traits.join(', ') : '';
-              this.formData.regions_associees = data.regions_associees ? data.regions_associees.join(', ') : '';
-              this.formData.position_x = data.position_x !== undefined ? data.position_x : 5;
-              this.formData.position_y = data.position_y !== undefined ? data.position_y : 5;
+              this.origin = data;
+              this.populateFormData(data);
             }
             this.loading = false;
           })
@@ -169,45 +198,41 @@
       submitForm() {
         const slug = this.$route.params.slug;
         
-        // Préparer les données pour l'envoi
         const dataToSend = {
           slug: slug,
-          nom: this.formData.nom || this.origin?.nom,
-          description: this.formData.description,
-          traits: this.formData.traits.split(',').map(t => t.trim()).filter(t => t),
-          regions_associees: this.formData.regions_associees.split(',').map(r => r.trim()).filter(r => r),
+          nom: this.formData.nom,
           position_x: this.formData.position_x,
-          position_y: this.formData.position_y
+          position_y: this.formData.position_y,
+          // Nouveaux champs
+          themes_majeurs: this.formData.themes_majeurs,
+          geographie: this.formData.geographie,
+          histoire: this.formData.histoire,
+          factions: this.formData.factions,
+          champions: this.formData.champions,
+          evenements: this.formData.evenements
         };
         
-        // Choisir la méthode HTTP selon si l'origine existe ou non
         const method = this.origin ? 'PUT' : 'POST';
         const url = this.origin 
           ? `http://localhost:3000/api/origins/${slug}` 
           : `http://localhost:3000/api/origins`;
         
-        // Envoyer les données à l'API
         fetch(url, {
           method: method,
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(dataToSend)
         })
           .then((response) => {
-            if (!response.ok) {
-              throw new Error("Erreur lors de la mise à jour de l'origine");
-            }
+            if (!response.ok) throw new Error("Erreur sauvegarde");
             return response.json();
           })
           .then((data) => {
-            // Mettre à jour l'affichage avec les nouvelles données
             this.origin = data;
-            this.showForm = false; // Masquer le formulaire
+            this.showForm = false;
           })
           .catch((error) => {
             console.error("Erreur:", error);
-            alert('Erreur lors de la mise à jour des informations');
+            alert('Erreur lors de la sauvegarde');
           });
       }
     }
@@ -217,103 +242,123 @@
   <style scoped>
   .origine-details-container {
     padding: 20px;
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  .no-origin-message {
-    background-color: #fff3cd;
-    border: 1px solid #ffc107;
-    border-radius: 5px;
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  .no-origin-message h2 {
-    color: #856404;
-    margin-top: 0;
-  }
-
-  .no-origin-message p {
-    color: #856404;
-    margin: 10px 0;
   }
   
-  .add-info-btn {
-    background-color: #4CAF50;
+  /* Header Section style (Copied/Adapted from CompetenceList) */
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    border-bottom: 2px solid #c8aa6e;
+    padding-bottom: 10px;
+  }
+  
+  .header-section h1 {
+      color: #c8aa6e;
+      margin: 0;
+  }
+
+  .action-buttons {
+    display: flex;
+    gap: 10px;
+  }
+
+  .btn-edit {
+    background-color: #2c6578;
     color: white;
-    padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    border-radius: 4px;
+    padding: 10px 20px;
     cursor: pointer;
-    font-size: 16px;
-    margin-top: 20px;
+    font-size: 14px;
+    transition: background-color 0.3s;
   }
   
-  .add-info-btn:hover {
-    background-color: #45a049;
+  .btn-edit:hover {
+    background-color: #1e4a5a;
   }
-  
+
+  /* Form Styles */
   .form-container {
-    margin-top: 20px;
-    padding: 20px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
     background-color: #f9f9f9;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
   }
-  
-  .form-container h2 {
-    margin-top: 0;
-    color: #333;
-  }
-  
+
   .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 20px;
   }
   
   .form-group label {
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
     font-weight: bold;
-    color: #555;
+    color: #333;
   }
   
-  .form-group input,
+  .form-group input[type="text"],
+  .form-group input[type="number"],
   .form-group textarea {
     width: 100%;
-    padding: 8px;
+    padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
-    font-size: 14px;
     box-sizing: border-box;
   }
-  
-  .form-group textarea {
-    resize: vertical;
+
+  .form-group-inline {
+      display: flex;
+      gap: 20px;
+      margin-bottom: 20px;
   }
-  
-  .submit-btn {
-    background-color: #008CBA;
+  .form-group-inline .form-group {
+      flex: 1;
+      margin-bottom: 0;
+  }
+
+  .info-text {
+      color: #666;
+      font-style: italic;
+      margin-bottom: 15px;
+  }
+
+  .form-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 15px;
+      margin-top: 30px;
+  }
+
+  .btn-cancel {
+    background-color: #6c757d;
     color: white;
-    padding: 10px 20px;
     border: none;
-    border-radius: 5px;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .submit-btn {
+    background-color: #28a745;
+    color: white;
+    border: none;
+    padding: 10px 25px;
+    border-radius: 4px;
     cursor: pointer;
     font-size: 16px;
   }
   
   .submit-btn:hover {
-    background-color: #007399;
-  }
-
-  .form-group-inline {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 15px;
+    background-color: #218838;
   }
   
-  .form-group-inline .form-group {
-    flex: 1;
-    margin-bottom: 0;
+  .no-origin-message {
+    background: #fff3cd;
+    padding: 20px;
+    border-radius: 5px;
+    color: #856404;
+    border: 1px solid #ffeeba;
   }
   </style>
